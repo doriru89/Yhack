@@ -15,33 +15,38 @@
   --high: #ff2d2d; --medium: #ff9800; --easy: #00c853; --hard: #ff2d2d;
   --thread-1: #e63946; --thread-2: #457b9d; --thread-3: #2a9d8f;
   --thread-4: #e9c46a; --thread-5: #f4a261; --thread-6: #264653;
-  --sidebar-w: 220px;
+  --sidebar-w: 72px; --sidebar-w-open: 220px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;display:flex;min-height:100vh;}
 
-/* SIDEBAR */
-.sidebar{width:var(--sidebar-w);background:var(--text);color:var(--bg);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;}
-.sidebar-header{padding:20px;border-bottom:3px solid var(--accent);}
-.sidebar-header h1{font-size:18px;letter-spacing:3px;line-height:1.2;}
-.sidebar-header p{font-size:10px;color:#888;margin-top:4px;letter-spacing:1px;}
-.sidebar-nav{flex:1;padding:8px 0;}
-.nav-item{display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;border-left:4px solid transparent;transition:all .15s;font-size:11px;text-transform:uppercase;letter-spacing:1px;}
+/* SIDEBAR — floating icon nav */
+.sidebar{width:var(--sidebar-w);background:var(--text);color:var(--bg);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;overflow:hidden;transition:width .2s ease;}
+.sidebar:hover{width:var(--sidebar-w-open);box-shadow:8px 0 24px rgba(0,0,0,.3);}
+.sidebar-header{padding:14px 16px;border-bottom:3px solid var(--accent);white-space:nowrap;overflow:hidden;}
+.sidebar-header h1{font-size:14px;letter-spacing:3px;line-height:1.2;}
+.sidebar-header p{font-size:9px;color:#888;margin-top:2px;letter-spacing:1px;opacity:0;transition:opacity .15s;}
+.sidebar:hover .sidebar-header p{opacity:1;}
+.sidebar-nav{flex:1;padding:8px 0;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-left:4px solid transparent;transition:all .15s;font-size:11px;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
 .nav-item:hover{background:rgba(255,255,255,.05);border-left-color:#555;}
 .nav-item.active{background:rgba(255,255,255,.08);border-left-color:var(--accent);color:#fff;}
-.nav-num{font-size:16px;font-weight:700;color:var(--accent);width:24px;text-align:center;}
+.nav-num{font-size:16px;font-weight:700;color:var(--accent);width:24px;text-align:center;flex-shrink:0;}
 .nav-item.active .nav-num{color:#fff;}
-.nav-label{flex:1;}
-.nav-dot{width:8px;height:8px;border-radius:50%;border:1px solid #555;}
+.nav-label{flex:1;opacity:0;transition:opacity .15s;}
+.sidebar:hover .nav-label{opacity:1;}
+.nav-dot{width:8px;height:8px;border-radius:50%;border:1px solid #555;opacity:0;transition:opacity .15s;flex-shrink:0;}
+.sidebar:hover .nav-dot{opacity:1;}
 .nav-dot.filled{background:var(--accent-3);border-color:var(--accent-3);}
-.sidebar-footer{padding:16px 20px;border-top:1px solid #333;font-size:10px;color:#666;}
+.sidebar-footer{padding:12px 16px;border-top:1px solid #333;font-size:10px;color:#666;opacity:0;transition:opacity .15s;white-space:nowrap;}
+.sidebar:hover .sidebar-footer{opacity:1;}
 .sidebar-footer button{background:none;border:1px solid #555;color:#888;padding:4px 8px;font-family:var(--mono);font-size:9px;cursor:pointer;margin:2px;}
 .sidebar-footer button:hover{color:var(--bg);border-color:var(--bg);}
 
 /* MAIN */
 .main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;}
 .page{display:none;padding:32px 40px 80px;max-width:1100px;animation:fadeIn .3s ease;}
-#page-brainstorm{max-width:none;}
+#page-brainstorm,#page-mvp{max-width:none;}
 .page.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .page-title{font-size:28px;font-weight:700;text-transform:uppercase;letter-spacing:3px;border-bottom:5px solid var(--text);padding-bottom:12px;margin-bottom:24px;}
@@ -187,6 +192,50 @@ label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;m
 .user-story{background:var(--surface);border:2px solid var(--text);padding:12px;margin-bottom:8px;font-size:12px;}
 .user-story strong{color:var(--accent-2);}
 
+/* MVP HERO */
+.mvp-hero{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:28px;border:3px solid var(--text);box-shadow:var(--shadow);}
+.mvp-hero-panel{padding:24px 20px;position:relative;}
+.mvp-hero-panel.why{background:var(--text);color:var(--bg);}
+.mvp-hero-panel.wow{background:var(--accent);color:#fff;border-left:3px solid var(--text);border-right:3px solid var(--text);}
+.mvp-hero-panel.what{background:var(--surface);}
+.mvp-hero-label{font-size:9px;text-transform:uppercase;letter-spacing:3px;opacity:.7;margin-bottom:8px;}
+.mvp-hero-text{font-size:15px;font-weight:700;line-height:1.4;}
+.mvp-hero-panel.wow .mvp-hero-text{font-size:17px;}
+
+/* UX JOURNEY CENTERPIECE */
+.ux-journey{border:3px solid var(--text);box-shadow:var(--shadow);background:var(--surface);padding:24px;margin-bottom:28px;}
+.ux-journey-title{font-size:11px;text-transform:uppercase;letter-spacing:3px;color:var(--accent);margin-bottom:16px;font-weight:700;}
+.ux-journey-steps{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:4px;}
+.ux-step{flex:1;min-width:100px;padding:20px 12px;text-align:center;border:2px solid var(--text);background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .15s;min-height:140px;justify-content:center;}
+.ux-step.active-step{background:var(--text);color:var(--bg);}
+.ux-step-emoji{font-size:28px;}
+.ux-step-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;line-height:1.3;}
+.ux-step-desc{font-size:9px;opacity:.7;line-height:1.4;}
+.ux-step-brick{font-size:8px;padding:2px 6px;border:1px solid currentColor;margin-top:auto;opacity:.8;text-transform:uppercase;letter-spacing:.5px;}
+.ux-arrow{display:flex;align-items:center;font-size:18px;font-weight:700;color:var(--accent);padding:0 3px;flex-shrink:0;}
+
+/* Stories + Prizes */
+.user-stories-compact{max-height:360px;overflow-y:auto;border:3px solid var(--text);background:var(--surface);box-shadow:var(--shadow);margin-bottom:28px;}
+.usc-header{position:sticky;top:0;background:var(--surface);z-index:2;padding:12px 14px 8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;border-bottom:2px solid var(--text);}
+.user-story-compact{padding:8px 14px;font-size:11px;border-bottom:1px solid var(--surface-alt);line-height:1.5;}
+.user-story-compact:last-child{border-bottom:none;}
+.user-story-compact strong{color:var(--accent-2);}
+
+/* GANTT CHART */
+.gantt-container{border:3px solid var(--text);box-shadow:var(--shadow);background:var(--surface);margin-bottom:28px;overflow-x:auto;}
+.gantt-table{width:100%;border-collapse:collapse;font-size:10px;min-width:1100px;}
+.gantt-table th{padding:8px 3px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:.5px;border-bottom:3px solid var(--text);border-right:1px solid var(--surface-alt);background:var(--bg);}
+.gantt-table th:first-child{text-align:left;padding-left:12px;min-width:150px;border-right:3px solid var(--text);font-size:10px;}
+.gantt-table th.rest-col{background:var(--surface-alt);}
+.gantt-table th.sleep-col{background:rgba(17,17,17,.08);min-width:40px;max-width:60px;}
+.gantt-table td{padding:0;height:44px;border-bottom:1px solid var(--surface-alt);border-right:1px solid var(--surface-alt);position:relative;vertical-align:middle;}
+.gantt-table td:first-child{padding:6px 10px;font-weight:700;font-size:10px;border-right:3px solid var(--text);white-space:nowrap;}
+.gantt-table td.rest-col{background:var(--surface-alt);}
+.gantt-table td.sleep-col{background:rgba(17,17,17,.06);min-width:40px;max-width:60px;}
+.gantt-table tr:last-child td{border-bottom:none;}
+.gantt-block{position:absolute;top:3px;bottom:3px;left:1px;right:1px;border:2px solid var(--text);font-size:8px;display:flex;align-items:center;justify-content:center;letter-spacing:.3px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 4px;cursor:default;}
+.gantt-block-video{background:var(--accent)!important;border-color:var(--accent)!important;color:#fff!important;}
+
 /* P6: SUBMISSION */
 .narr-step{display:flex;gap:14px;margin-bottom:14px;padding:14px;background:var(--surface);border:2px solid var(--text);align-items:flex-start;}
 .narr-num{font-size:28px;font-weight:700;color:var(--accent);line-height:1;width:36px;flex-shrink:0;}
@@ -202,9 +251,13 @@ label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;m
 .tip-card p{font-size:10px;color:var(--text-dim);}
 
 @media(max-width:900px){
-  .sidebar{width:60px;}.sidebar-header h1,.sidebar-header p,.nav-label,.nav-dot,.sidebar-footer{display:none;}
-  .nav-item{padding:14px 0;justify-content:center;}.main{margin-left:60px;}
+  .sidebar{width:48px;}.sidebar:hover{width:48px;box-shadow:none;}
+  .sidebar-header h1{font-size:11px;}.sidebar-header p,.nav-label,.nav-dot,.sidebar-footer{display:none!important;}
+  .sidebar:hover .nav-label,.sidebar:hover .nav-dot,.sidebar:hover .sidebar-footer{display:none!important;}
+  .nav-item{padding:12px 0;justify-content:center;}.main{margin-left:48px;}
   .kanban{grid-template-columns:1fr 1fr;}.schedule-grid,.grid-2{grid-template-columns:1fr;}
+  .mvp-hero{grid-template-columns:1fr;}.mvp-hero-panel.wow{border-left:none;border-right:none;border-top:3px solid var(--text);border-bottom:3px solid var(--text);}
+  .mvp-mid-row{grid-template-columns:1fr;}
   .page{padding:20px;}
 }
 @media print{.sidebar,.detail-overlay,.overlay-bg,.coverage-sticky,.toast{display:none!important;}.main{margin-left:0;}.page{display:block!important;page-break-after:always;}}
@@ -1040,54 +1093,266 @@ function renderMVP() {
     return {brick:b, story: storyMap[b.id] || `As a user, I want ${b.name} so that I benefit.`};
   });
 
-  // Timeline
-  const phases = [
-    {label:'HOUR 0-1',title:'Setup',desc:'Repo, API keys, project scaffold',bricks:[]},
-    {label:'HOUR 1-8',title:'Core Build',desc:'Must-have features',bricks:sel.filter(b=>b.category==='core'||b.id==='triage')},
-    {label:'HOUR 8-14',title:'Expand',desc:'Additional prize tracks',bricks:sel.filter(b=>['explainer','vaccine','workflow','scribe','drugs'].includes(b.id))},
-    {label:'HOUR 14-20',title:'Polish',desc:'Bonus features + UI polish',bricks:sel.filter(b=>['insurance','dashboard','vet','knowledgegraph','auth','export','study'].includes(b.id))},
-    {label:'HOUR 20-24',title:'Demo + Submit',desc:'Record video by 10:30am! Devpost submission.',bricks:[]},
+  // UX Journey steps
+  const uxSteps = [
+    {emoji:'\u{1F691}',label:'Patient Arrives',desc:'ER waiting room',brick:null},
+    {emoji:'\u{1F4F1}',label:'Opens Tablet',desc:'Language selection',brick:'ui'},
+    {emoji:'\u{1F5E3}',label:'Voice Input',desc:'Speaks native language',brick:'voice'},
+    {emoji:'\u{1F3E5}',label:'AI Triage',desc:'Pain scale, body map, follow-ups',brick:'triage'},
+    {emoji:'\u{1F9E0}',label:'AI Reasoning',desc:'Dual-model diagnosis',brick:'reasoning'},
+    {emoji:'\u{1F4C4}',label:'Doctor Gets PDF',desc:'1-page summary',brick:'export'},
+    {emoji:'\u{1F4AC}',label:'Consultation',desc:'Doctor already informed',brick:null},
+    {emoji:'\u{1F4D6}',label:'Diagnosis Explained',desc:'Plain language',brick:'explainer'},
+    {emoji:'\u{1F489}',label:'Vaccine Check',desc:'Overdue flagged',brick:'vaccine'},
+    {emoji:'\u2705',label:'Patient Leaves',desc:'Informed & empowered',brick:null},
   ];
+
+  // Team members
+  const TEAM = [
+    {key:'austin',label:'Austin',role:'Frontend + Agent',color:'#0057ff'},
+    {key:'cs',label:'CS Expert',role:'Backend + API',color:'#00c853'},
+    {key:'medical',label:'Medical TM',role:'Validation',color:'#ff2d2d'},
+    {key:'consultant',label:'Consultant',role:'Pitch + UX',color:'#ff9800'},
+  ];
+
+  // Time grid: 24 hours with work/rest/sleep blocks
+  // H0=11am Sat, H24=11am Sun
+  const HOURS = [];
+  const clockLabels = ['11a','12p','1p','2p','3p','4p','5p','6p','7p','8p','9p','10p','11p','12a','1a','2a','3a','4a','5a','6a','7a','8a','9a','10a'];
+  // type: 'work','rest','sleep'
+  // 11pm-1am (H12-13) = late night work, 1am-7am (H14-19) = SLEEP, 7am+ = work
+  const hourTypes = [
+    'work','work',    // H0-2: Work 1 (11am-1pm)
+    'rest',           // H2-3: Lunch
+    'work','work',    // H3-5: Work 2 (2pm-4pm)
+    'rest',           // H5-6: Break
+    'work','work',    // H6-8: Work 3 (5pm-7pm)
+    'rest',           // H8-9: Break
+    'work','work',    // H9-11: Work 4 (8pm-10pm)
+    'rest',           // H11-12: Wind down (10pm-11pm)
+    'work','work',    // H12-14: Late night work (11pm-1am)
+    'sleep','sleep','sleep','sleep','sleep','sleep', // H14-20: SLEEP (1am-7am)
+    'rest',           // H20-21: Wake up / Breakfast (7am-8am)
+    'work','work',    // H21-23: Work 6 (8am-10am)
+    'work',           // H23-24: VIDEO (10am-11am) — special
+  ];
+  for (let i=0;i<24;i++) HOURS.push({h:i,clock:clockLabels[i],type:hourTypes[i]});
+
+  // Scheduler: per-member independent scheduling with dependency tracking
+  function scheduleBricks(bricks) {
+    const brickMap = {};
+    bricks.forEach(b => brickMap[b.id] = b);
+
+    // Topological sort (Kahn's)
+    const inDeg = {};
+    bricks.forEach(b => { inDeg[b.id] = 0; });
+    bricks.forEach(b => b.deps.forEach(d => { if (inDeg[d] !== undefined) inDeg[b.id]++; }));
+    const queue = bricks.filter(b => inDeg[b.id] === 0).map(b => b.id);
+    const sorted = [];
+    while (queue.length) {
+      const id = queue.shift();
+      sorted.push(id);
+      bricks.forEach(b => { if (b.deps.includes(id)) { inDeg[b.id]--; if (inDeg[b.id] === 0) queue.push(b.id); } });
+    }
+    bricks.forEach(b => { if (!sorted.includes(b.id)) sorted.push(b.id); });
+
+    // Per-member booking: member -> Set of booked hours
+    const booked = {};
+    TEAM.forEach(t => booked[t.key] = new Set());
+    // Brick completion: brickId -> end hour (max across all members)
+    const brickEnd = {};
+    const placements = [];
+
+    // Schedulable hours: work only (not rest/sleep, H23 reserved for video)
+    const schedHours = HOURS.filter(h => h.type === 'work' && h.h < 23).map(h => h.h);
+
+    // Estimate per-member hours for a brick (proportional to brick timeHours / num assigned)
+    function memberDur(brick, memberKey) {
+      const assigned = TEAM.filter(t => brick.teamAssign[t.key] && brick.teamAssign[t.key].trim());
+      // Each member works their portion. Core devs (austin, cs) get most hours, others get fewer
+      const task = brick.teamAssign[memberKey];
+      if (!task || !task.trim()) return 0;
+      // Validation/review tasks are shorter, dev tasks take longer
+      const isReview = /valid|test|check|feedback|critique|readab/i.test(task);
+      const isPitch = /pitch|narrative|story|case/i.test(task);
+      if (isReview) return Math.max(1, Math.ceil(brick.timeHours * 0.3));
+      if (isPitch) return Math.max(1, Math.ceil(brick.timeHours * 0.25));
+      return Math.ceil(brick.timeHours * 0.6); // dev work
+    }
+
+    // Find N free schedulable hours for a member starting at or after minHour
+    function findFreeHours(memberKey, count, minHour) {
+      const found = [];
+      for (let i = 0; i < schedHours.length && found.length < count; i++) {
+        const h = schedHours[i];
+        if (h < minHour) continue;
+        if (!booked[memberKey].has(h)) found.push(h);
+      }
+      return found.length >= count ? found : null;
+    }
+
+    sorted.forEach(id => {
+      const b = brickMap[id];
+      if (!b) return;
+
+      // Earliest start: after all deps are fully complete
+      let depEnd = 0;
+      b.deps.forEach(d => { if (brickEnd[d] !== undefined) depEnd = Math.max(depEnd, brickEnd[d]); });
+
+      let maxEnd = depEnd;
+
+      // Schedule EACH member independently
+      TEAM.forEach(tm => {
+        const dur = memberDur(b, tm.key);
+        if (dur === 0) return;
+        const hours = findFreeHours(tm.key, dur, depEnd);
+        if (hours) {
+          hours.forEach(h => booked[tm.key].add(h));
+          placements.push({
+            brickId: b.id, brickName: b.name, brickEmoji: b.emoji,
+            member: tm.key, task: b.teamAssign[tm.key],
+            startH: hours[0], endH: hours[hours.length - 1] + 1,
+            color: tm.color
+          });
+          maxEnd = Math.max(maxEnd, hours[hours.length - 1] + 1);
+        }
+      });
+
+      brickEnd[b.id] = maxEnd;
+    });
+
+    // H23-24: VIDEO — all hands
+    TEAM.forEach(t => {
+      placements.push({
+        brickId: 'video', brickName: 'VIDEO + SUBMIT', brickEmoji: '\u{1F3AC}',
+        member: t.key,
+        task: t.key === 'consultant' ? 'PITCH LEAD' : t.key === 'medical' ? 'VALIDATE DEMO' : t.key === 'cs' ? 'FINAL CODE + VIDEO' : 'VIDEO + DEVPOST',
+        startH: 23, endH: 24, color: '#ff2d2d', isVideo: true
+      });
+    });
+
+    return placements;
+  }
+
+  const placements = scheduleBricks(sel);
+
+  // Build Gantt HTML
+  // Sleep hours H14-19 condensed into one "SLEEP" column
+  const SLEEP_START = 14, SLEEP_END = 20; // 1am-7am
+
+  function renderGanttHTML() {
+    // Header row
+    let hdr = '<tr><th>TEAM MEMBER</th>';
+    for (let h = 0; h < 24; h++) {
+      if (h > SLEEP_START && h < SLEEP_END) continue; // condensed
+      const hour = HOURS[h];
+      if (h === SLEEP_START) {
+        hdr += '<th class="sleep-col" style="font-size:7px;letter-spacing:0;">SLEEP<br>1a-7a</th>';
+      } else {
+        const cls = hour.type === 'rest' ? ' class="rest-col"' : '';
+        hdr += `<th${cls}>${hour.clock}</th>`;
+      }
+    }
+    hdr += '</tr>';
+
+    // Team rows
+    let rows = '';
+    TEAM.forEach(tm => {
+      const myPlacements = placements.filter(p => p.member === tm.key);
+      let cells = `<td><span style="display:inline-block;width:10px;height:10px;background:${tm.color};border:2px solid var(--text);margin-right:6px;vertical-align:middle;"></span>${tm.label}<br><span style="font-size:8px;color:var(--text-dim);font-weight:400;">${tm.role}</span></td>`;
+
+      let h = 0;
+      while (h < 24) {
+        // Condensed sleep zone
+        if (h === SLEEP_START) {
+          cells += '<td class="sleep-col" style="text-align:center;font-size:7px;color:var(--text-dim);">zzz</td>';
+          h = SLEEP_END;
+          continue;
+        }
+        if (h > SLEEP_START && h < SLEEP_END) { h++; continue; } // skip
+
+        const hourInfo = HOURS[h];
+        const cls = hourInfo.type === 'rest' ? ' class="rest-col"' : '';
+
+        // Find placement starting at this hour
+        const pl = myPlacements.find(p => p.startH === h);
+        if (pl) {
+          // Clamp endH to not cross into sleep zone or past 24
+          let endH = pl.endH;
+          if (h < SLEEP_START && endH > SLEEP_START) endH = SLEEP_START;
+          if (endH > 24) endH = 24;
+          const span = endH - h;
+          if (span < 1) { h++; continue; }
+          const bgAlpha = pl.isVideo ? '' : `background:${pl.color}18;`;
+          const borderC = pl.isVideo ? '' : `border-color:${pl.color};`;
+          const textC = pl.isVideo ? '' : `color:${pl.color};`;
+          const videoClass = pl.isVideo ? ' gantt-block-video' : '';
+          const label = pl.brickId === 'video' ? pl.task : pl.brickName;
+          cells += `<td colspan="${span}" style="position:relative;" title="${pl.task}"><div class="gantt-block${videoClass}" style="${bgAlpha}${borderC}${textC}">${pl.brickEmoji} ${label}</div></td>`;
+          h += span;
+        } else {
+          cells += `<td${cls}></td>`;
+          h++;
+        }
+      }
+      rows += `<tr>${cells}</tr>`;
+    });
+
+    return `<table class="gantt-table"><thead>${hdr}</thead><tbody>${rows}</tbody></table>`;
+  }
 
   document.getElementById('mvpContent').innerHTML = `
     ${warnings.map(w=>`<div class="warning-box">${w}</div>`).join('')}
-    <div class="section-title">Selected Modules (${sel.length} bricks, ~${totalH}h)</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;">${sel.map(b=>`<div style="padding:6px 12px;border:2px solid var(--text);background:var(--surface);font-size:11px;">${b.emoji} ${b.name}</div>`).join('')}</div>
 
-    <div class="section-title">User Stories</div>
-    ${stories.map(s=>`<div class="user-story">${s.story}</div>`).join('')}
-    <div style="display:flex;gap:8px;margin:12px 0 24px;flex-wrap:wrap;">
-      <button class="btn btn-claude" onclick="askClaude('userStories')">Ask Claude: Improve User Stories</button>
-      <button class="btn" style="background:var(--accent);color:#fff;border-color:var(--accent);" onclick="askClaude('guru')">Ask Hackathon Guru: Full Strategy Review</button>
-    </div>
-
-    <div class="section-title">UX Integration Flow</div>
-    <div class="card" style="padding:16px;margin-bottom:12px;font-size:12px;line-height:2;">
-      Patient arrives &rarr; <strong>Opens tablet</strong> &rarr; Selects language &rarr; <strong>AI Triage Intake</strong> (pain scale, body map, follow-ups) &rarr; Triage summary generated &rarr; <strong>Doctor reviews 1-page PDF</strong> &rarr; Consultation happens &rarr; <strong>Diagnosis Explainer</strong> (plain language) &rarr; <strong>Vaccine Check</strong> &rarr; Patient leaves informed
-    </div>
-    <button class="btn btn-claude" style="margin-bottom:24px;" onclick="askClaude('uxReview')">Ask Claude: UX Integration Review</button>
-
-    <div class="section-title">Team Legend</div>
-    <div class="team-legend">
-      <div class="team-legend-item"><div class="team-color" style="background:var(--accent-2);"></div>Austin (Frontend + Agent)</div>
-      <div class="team-legend-item"><div class="team-color" style="background:var(--easy);"></div>CS Expert (Backend + API)</div>
-      <div class="team-legend-item"><div class="team-color" style="background:var(--accent);"></div>Medical TM (Validation)</div>
-      <div class="team-legend-item"><div class="team-color" style="background:var(--medium);"></div>Consultant TM (Pitch)</div>
-    </div>
-
-    <div class="section-title">24-Hour Timeline</div>
-    <div class="timeline">${phases.map((p,i)=>`
-      <div class="tl-item${i<3?' active':''}">
-        <div class="tl-time">${p.label}</div>
-        <h4>${p.title}</h4>
-        <p style="font-size:11px;color:var(--text-dim);">${p.desc}</p>
-        ${p.bricks.length?`<div class="tl-bricks">${p.bricks.map(b=>`<span class="tl-brick">${b.emoji} ${b.name}</span>`).join('')}</div>`:''}
+    <div class="mvp-hero">
+      <div class="mvp-hero-panel why">
+        <div class="mvp-hero-label">// WHY THIS MATTERS</div>
+        <div class="mvp-hero-text">130M Americans visit the ER each year. The first 15 minutes are wasted on miscommunication.</div>
       </div>
-    `).join('')}</div>
+      <div class="mvp-hero-panel wow">
+        <div class="mvp-hero-label">// THE WOW</div>
+        <div class="mvp-hero-text">A patient speaks Mandarin into a tablet. 90 seconds later, the doctor has a complete triage report in English.</div>
+      </div>
+      <div class="mvp-hero-panel what">
+        <div class="mvp-hero-label">// WHAT WE BUILT &mdash; ${sel.length} MODULES, ~${totalH}H</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">${sel.map(b=>`<div style="padding:3px 8px;border:2px solid var(--text);font-size:9px;background:var(--bg);">${b.emoji} ${b.name}</div>`).join('')}</div>
+      </div>
+    </div>
 
-    <div class="section-title">Prize Coverage</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${ALL_PRIZES.map(p=>`<span class="tag ${cov.has(p)?'tag-prize':''}" style="${cov.has(p)?'':'opacity:.3;'}">${p}</span>`).join('')}</div>
-    <p style="font-size:12px;color:var(--text-dim);">Covering ${cov.size}/${ALL_PRIZES.length} prize tracks with ${sel.length} bricks (~${totalH}h build).</p>
+    <div class="ux-journey">
+      <div class="ux-journey-title">End-to-End Patient Journey</div>
+      <div class="ux-journey-steps">
+        ${uxSteps.map((step, i) => {
+          const hasBrick = step.brick && sel.some(b => b.id === step.brick);
+          const isActive = !step.brick || hasBrick;
+          const dimmed = step.brick && !hasBrick;
+          return `${i > 0 ? '<div class="ux-arrow">&#9654;</div>' : ''}<div class="ux-step${isActive && !dimmed ? ' active-step' : ''}" style="${dimmed ? 'opacity:.25;' : ''}">${'<div class="ux-step-emoji">' + step.emoji + '</div>'}<div class="ux-step-label">${step.label}</div><div class="ux-step-desc">${step.desc}</div>${step.brick ? '<div class="ux-step-brick">' + step.brick + '</div>' : ''}</div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-claude" onclick="askClaude('uxReview')">Ask Claude: UX Integration Review</button>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;">Prize Coverage (${cov.size}/${ALL_PRIZES.length})</span>
+      ${ALL_PRIZES.map(p=>`<span class="tag ${cov.has(p)?'tag-prize':''}" style="${cov.has(p)?'':'opacity:.3;'}font-size:10px;">${p}</span>`).join('')}
+      <button class="btn" style="background:var(--accent);color:#fff;border-color:var(--accent);font-size:9px;padding:4px 10px;" onclick="askClaude('guru')">Strategy Review</button>
+    </div>
+
+    <div class="user-stories-compact">
+      <div class="usc-header">User Stories (${stories.length})</div>
+      ${stories.map(s=>`<div class="user-story-compact">${s.story}</div>`).join('')}
+      <div style="padding:8px 14px;"><button class="btn btn-claude" style="width:100%;font-size:10px;" onclick="askClaude('userStories')">Improve Stories</button></div>
+    </div>
+
+    <div class="section-title">Team Execution Plan &mdash; 24h Gantt</div>
+    <p style="font-size:10px;color:var(--text-dim);margin-bottom:10px;">Auto-scheduled from brick dependencies. 2h work / 1h rest. Hover blocks for task details.</p>
+    <div style="display:flex;gap:14px;margin-bottom:10px;font-size:10px;flex-wrap:wrap;">
+      ${TEAM.map(t=>`<span><span style="display:inline-block;width:10px;height:10px;background:${t.color};border:2px solid var(--text);vertical-align:middle;margin-right:4px;"></span>${t.label}</span>`).join('')}
+      <span style="color:var(--text-dim);">&nbsp;&nbsp;|&nbsp;&nbsp;<span style="display:inline-block;width:10px;height:10px;background:var(--surface-alt);border:1px solid var(--text);vertical-align:middle;margin-right:4px;"></span>Rest&nbsp;&nbsp;<span style="display:inline-block;width:10px;height:10px;background:rgba(17,17,17,.08);border:1px solid var(--text);vertical-align:middle;margin-right:4px;"></span>Sleep (1a-7a condensed)</span>
+    </div>
+    <div class="gantt-container">${renderGanttHTML()}</div>
 
     <div class="section-title">12 Winning Dimensions Self-Check</div>
     <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">From analysis of 25+ winning projects at TreeHacks, HackHarvard, PennApps, MIT Reality Hack. Score 80+ to be competitive, 90+ to win.</p>
