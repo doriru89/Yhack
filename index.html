@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YHACK 2026 // WAR ROOM</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap');
+:root {
+  --bg: #f5f0e8; --surface: #fff; --surface-alt: #ebe6de;
+  --accent: #ff2d2d; --accent-2: #0057ff; --accent-3: #00c853;
+  --text: #111; --text-dim: #777;
+  --mono: 'JetBrains Mono', monospace;
+  --shadow: 4px 4px 0 #111; --shadow-sm: 2px 2px 0 #111;
+  --high: #ff2d2d; --medium: #ff9800; --easy: #00c853; --hard: #ff2d2d;
+  --thread-1: #e63946; --thread-2: #457b9d; --thread-3: #2a9d8f;
+  --thread-4: #e9c46a; --thread-5: #f4a261; --thread-6: #264653;
+  --sidebar-w: 220px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--text);color:var(--bg);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;}
+.sidebar-header{padding:20px;border-bottom:3px solid var(--accent);}
+.sidebar-header h1{font-size:18px;letter-spacing:3px;line-height:1.2;}
+.sidebar-header p{font-size:10px;color:#888;margin-top:4px;letter-spacing:1px;}
+.sidebar-nav{flex:1;padding:8px 0;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;border-left:4px solid transparent;transition:all .15s;font-size:11px;text-transform:uppercase;letter-spacing:1px;}
+.nav-item:hover{background:rgba(255,255,255,.05);border-left-color:#555;}
+.nav-item.active{background:rgba(255,255,255,.08);border-left-color:var(--accent);color:#fff;}
+.nav-num{font-size:16px;font-weight:700;color:var(--accent);width:24px;text-align:center;}
+.nav-item.active .nav-num{color:#fff;}
+.nav-label{flex:1;}
+.nav-dot{width:8px;height:8px;border-radius:50%;border:1px solid #555;}
+.nav-dot.filled{background:var(--accent-3);border-color:var(--accent-3);}
+.sidebar-footer{padding:16px 20px;border-top:1px solid #333;font-size:10px;color:#666;}
+.sidebar-footer button{background:none;border:1px solid #555;color:#888;padding:4px 8px;font-family:var(--mono);font-size:9px;cursor:pointer;margin:2px;}
+.sidebar-footer button:hover{color:var(--bg);border-color:var(--bg);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;}
+.page{display:none;padding:32px 40px 80px;max-width:1100px;animation:fadeIn .3s ease;}
+#page-brainstorm{max-width:none;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.page-title{font-size:28px;font-weight:700;text-transform:uppercase;letter-spacing:3px;border-bottom:5px solid var(--text);padding-bottom:12px;margin-bottom:24px;}
+.page-desc{font-size:12px;color:var(--text-dim);margin-bottom:24px;max-width:700px;}
+.section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:28px 0 14px;padding-bottom:6px;border-bottom:2px solid var(--surface-alt);}
+
+/* SHARED COMPONENTS */
+.card{background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);padding:16px;transition:all .15s;}
+.card:hover{box-shadow:6px 6px 0 #111;transform:translate(-2px,-2px);}
+.tag{display:inline-block;padding:2px 8px;font-size:9px;text-transform:uppercase;letter-spacing:1px;border:2px solid var(--text);margin:2px;font-family:var(--mono);font-weight:700;}
+.tag-high{background:var(--high);color:#fff;border-color:var(--high);}
+.tag-med{background:var(--medium);color:#111;border-color:var(--medium);}
+.tag-skip{background:#ddd;color:#999;border-color:#ccc;}
+.tag-prize{background:var(--accent-2);color:#fff;border-color:var(--accent-2);}
+.tag-easy{background:var(--easy);color:#111;border-color:#111;}
+.tag-hard{background:var(--hard);color:#fff;border-color:var(--hard);}
+.tag-medium{background:var(--medium);color:#111;border-color:#111;}
+.tag-core{background:var(--text);color:var(--bg);}
+.btn{font-family:var(--mono);font-size:11px;padding:8px 16px;border:2px solid var(--text);cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .1s;}
+.btn-primary{background:var(--text);color:var(--bg);}
+.btn-primary:hover{background:var(--accent);border-color:var(--accent);}
+.btn-secondary{background:var(--surface);}
+.btn-secondary:hover{background:var(--surface-alt);}
+.btn-claude{background:var(--accent-2);color:#fff;border-color:var(--accent-2);}
+.btn-claude:hover{background:#0040cc;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+input,textarea,select{width:100%;padding:8px 12px;font-family:var(--mono);font-size:12px;border:2px solid var(--text);background:var(--bg);}
+textarea{min-height:60px;resize:vertical;}
+label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;margin-top:10px;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:var(--bg);padding:12px 24px;font-size:12px;z-index:999;display:none;border:3px solid var(--accent);box-shadow:var(--shadow);}
+.toast.show{display:block;animation:fadeIn .2s ease;}
+.warning-box{background:#fff3cd;border:2px solid #111;padding:10px 14px;font-size:12px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;}
+.warning-box::before{content:'!';font-weight:700;font-size:14px;background:var(--accent);color:#fff;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+
+/* P1: RACE INFO */
+.schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.schedule-day{background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);}
+.schedule-day h3{background:var(--text);color:var(--bg);padding:10px 16px;font-size:13px;}
+.schedule-item{padding:8px 16px;border-bottom:1px solid var(--surface-alt);font-size:12px;display:flex;gap:12px;}
+.schedule-item .time{font-weight:700;color:var(--accent);white-space:nowrap;min-width:80px;}
+.schedule-item.critical{background:#fff3cd;}
+
+/* P2: AWARDS */
+.award-row{display:flex;align-items:stretch;border:2px solid var(--text);margin-bottom:-2px;font-size:12px;background:var(--surface);transition:all .1s;}
+.award-row:hover{background:#ffd;}
+.award-row.skipped{opacity:.4;background:var(--surface-alt);}
+.award-priority{width:8px;flex-shrink:0;}
+.award-priority.high{background:var(--high);}
+.award-priority.med{background:var(--medium);}
+.award-priority.skip{background:#ccc;}
+.award-body{flex:1;padding:10px 14px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+.award-cat{font-weight:700;min-width:180px;}
+.award-sponsor{color:var(--text-dim);min-width:100px;font-size:11px;}
+.award-prize{flex:1;font-size:11px;}
+.award-actions{padding:8px;display:flex;gap:4px;align-items:center;}
+.award-actions button{font-family:var(--mono);font-size:9px;padding:3px 8px;border:1px solid var(--text);background:var(--surface);cursor:pointer;}
+.award-actions button.active{background:var(--text);color:var(--bg);}
+.award-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+
+/* P3: BRAINSTORM */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:flex-start;}
+.kanban-col{background:var(--surface-alt);border:2px solid var(--text);min-height:200px;}
+.kanban-col-header{background:var(--text);color:var(--bg);padding:12px 16px;font-size:12px;text-transform:uppercase;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;}
+.kanban-col-header span{font-size:10px;color:#888;}
+.kanban-items{padding:10px;}
+.kanban-card{background:var(--surface);border:2px solid var(--text);border-left:5px solid var(--text);padding:14px;margin-bottom:10px;font-size:13px;cursor:default;box-shadow:var(--shadow-sm);transition:all .15s;}
+.kanban-card.thread-glow{box-shadow:0 0 0 3px var(--glow-color, var(--accent-2)),var(--shadow-sm);transform:translate(-1px,-1px);}
+.kanban-card.thread-dim{opacity:.35;filter:grayscale(.5);}
+.kanban-card h4{font-size:14px;margin-bottom:6px;}
+.kanban-card p{color:#444;font-size:12px;line-height:1.5;}
+.kanban-card .card-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.kanban-card .meta-tag{font-size:10px;padding:3px 8px;border:1px solid #999;color:#555;text-transform:uppercase;letter-spacing:.5px;}
+.kanban-card .card-actions{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;}
+.kanban-card .card-actions button{font-family:var(--mono);font-size:9px;padding:3px 10px;border:1px solid var(--text);background:var(--surface);cursor:pointer;transition:all .1s;}
+.kanban-card .card-actions button:hover{background:var(--text);color:var(--bg);}
+.kanban-add{padding:8px;}
+.kanban-add input{font-size:12px;padding:8px 10px;}
+.brainstorm-toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.brainstorm-toolbar .thread-chip{padding:4px 12px;font-size:10px;border:2px solid;cursor:pointer;font-family:var(--mono);font-weight:700;text-transform:uppercase;letter-spacing:1px;transition:all .1s;}
+.brainstorm-toolbar .thread-chip:hover,.brainstorm-toolbar .thread-chip.active{transform:translate(-1px,-1px);box-shadow:var(--shadow-sm);}
+.sync-indicator{font-size:10px;padding:4px 10px;border:1px solid;margin-left:auto;}
+
+/* P4: LEGO BRICKS */
+.brick-toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.brick-toolbar button{font-family:var(--mono);font-size:10px;padding:6px 12px;border:2px solid var(--text);background:var(--surface);cursor:pointer;text-transform:uppercase;letter-spacing:1px;}
+.brick-toolbar button:hover,.brick-toolbar button.active{background:var(--text);color:var(--bg);}
+.brick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.brick{background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);cursor:pointer;transition:all .15s;position:relative;user-select:none;}
+.brick.selected{background:var(--text);color:var(--bg);box-shadow:none;transform:translate(4px,4px);}
+.brick-cat{position:absolute;top:0;right:0;font-size:9px;text-transform:uppercase;letter-spacing:1px;padding:4px 10px;background:var(--text);color:var(--bg);}
+.brick.selected .brick-cat{background:var(--accent);}
+.brick-top{padding:14px 14px 8px;display:flex;gap:12px;align-items:flex-start;}
+.brick-emoji{font-size:26px;line-height:1;}
+.brick-info{flex:1;}
+.brick-name{font-size:13px;font-weight:700;}
+.brick-desc{font-size:10px;color:var(--text-dim);margin-top:2px;}
+.brick.selected .brick-desc{color:#999;}
+.brick-meta{padding:0 14px 10px;display:flex;flex-wrap:wrap;gap:4px;}
+.brick-actions{padding:8px 14px 12px;display:flex;gap:6px;}
+.brick-actions button{font-family:var(--mono);font-size:9px;padding:3px 10px;border:2px solid;cursor:pointer;text-transform:uppercase;}
+.brick .btn-info{border-color:var(--text);background:var(--surface);color:var(--text);}
+.brick.selected .btn-info{border-color:#555;background:transparent;color:var(--bg);}
+.coverage-sticky{background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);padding:16px;margin-bottom:20px;position:sticky;top:0;z-index:50;}
+.coverage-count{font-size:24px;font-weight:700;color:var(--accent);}
+.coverage-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.cov-tag{padding:3px 8px;font-size:9px;text-transform:uppercase;letter-spacing:1px;border:2px solid #ccc;color:#ccc;font-family:var(--mono);font-weight:700;transition:all .2s;}
+.cov-tag.covered{border-color:var(--accent-2);color:#fff;background:var(--accent-2);}
+
+/* DETAIL PANEL */
+.detail-overlay{display:none;position:fixed;top:0;right:0;bottom:0;width:min(500px,90vw);background:var(--surface);border-left:5px solid var(--text);z-index:200;overflow-y:auto;box-shadow:-10px 0 40px rgba(0,0,0,.3);}
+.detail-overlay.open{display:block;}
+.detail-close{position:sticky;top:0;background:var(--text);color:var(--bg);border:none;padding:12px 20px;width:100%;text-align:left;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;z-index:1;}
+.detail-body{padding:24px;}
+.detail-body h3{font-size:20px;margin-bottom:16px;}
+.detail-section{margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid var(--surface-alt);}
+.detail-section h4{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);margin-bottom:6px;}
+.detail-section p,.detail-section li{font-size:12px;line-height:1.6;}
+.detail-section ul{padding-left:16px;}
+.diff-bar{display:flex;gap:3px;}
+.diff-bar span{width:36px;height:7px;background:var(--surface-alt);border:1px solid var(--text);}
+.diff-bar span.on{background:var(--accent);}
+.diff-bar.easy span.on{background:var(--easy);}
+.diff-bar.medium span.on{background:var(--medium);}
+.diff-bar.hard span.on{background:var(--hard);}
+.overlay-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:199;}
+.overlay-bg.open{display:block;}
+
+/* P5: MVP BUILDER */
+.timeline{position:relative;padding-left:32px;margin:20px 0;}
+.timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:3px;background:var(--text);}
+.tl-item{position:relative;margin-bottom:20px;padding:14px;background:var(--surface);border:2px solid var(--text);}
+.tl-item::before{content:'';position:absolute;left:-28px;top:18px;width:14px;height:14px;background:var(--text);border:3px solid var(--bg);}
+.tl-item.active::before{background:var(--accent);}
+.tl-time{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:4px;}
+.tl-item h4{font-size:13px;margin-bottom:4px;}
+.tl-bricks{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.tl-brick{padding:2px 8px;font-size:10px;background:var(--surface-alt);border:1px solid var(--text);}
+.team-legend{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;font-size:11px;}
+.team-legend-item{display:flex;align-items:center;gap:6px;}
+.team-color{width:14px;height:14px;border:2px solid var(--text);}
+.user-story{background:var(--surface);border:2px solid var(--text);padding:12px;margin-bottom:8px;font-size:12px;}
+.user-story strong{color:var(--accent-2);}
+
+/* P6: SUBMISSION */
+.narr-step{display:flex;gap:14px;margin-bottom:14px;padding:14px;background:var(--surface);border:2px solid var(--text);align-items:flex-start;}
+.narr-num{font-size:28px;font-weight:700;color:var(--accent);line-height:1;width:36px;flex-shrink:0;}
+.narr-content h4{font-size:12px;margin-bottom:4px;}
+.narr-content p{font-size:11px;color:var(--text-dim);}
+.judge-card{background:var(--surface);border:2px solid var(--text);padding:14px;margin-bottom:8px;}
+.judge-card h4{font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;color:var(--accent-2);}
+.judge-card p{font-size:12px;}
+.tip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.tip-card{background:var(--surface);border:2px solid var(--text);padding:14px;}
+.tip-card .icon{font-size:22px;margin-bottom:6px;}
+.tip-card h4{font-size:11px;margin-bottom:4px;}
+.tip-card p{font-size:10px;color:var(--text-dim);}
+
+@media(max-width:900px){
+  .sidebar{width:60px;}.sidebar-header h1,.sidebar-header p,.nav-label,.nav-dot,.sidebar-footer{display:none;}
+  .nav-item{padding:14px 0;justify-content:center;}.main{margin-left:60px;}
+  .kanban{grid-template-columns:1fr 1fr;}.schedule-grid,.grid-2{grid-template-columns:1fr;}
+  .page{padding:20px;}
+}
+@media print{.sidebar,.detail-overlay,.overlay-bg,.coverage-sticky,.toast{display:none!important;}.main{margin-left:0;}.page{display:block!important;page-break-after:always;}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header"><h1>YHACK<br>2026</h1><p>WAR ROOM</p></div>
+  <nav class="sidebar-nav" id="sidebarNav"></nav>
+  <div class="sidebar-footer">
+    <button onclick="exportState()">Export</button>
+    <button onclick="importState()">Import</button>
+  </div>
+</aside>
+
+<div class="main">
+  <!-- P1 RACE INFO -->
+  <div class="page" id="page-race" data-title="Race Info">
+    <h1 class="page-title">01 // Race Info</h1>
+    <p class="page-desc">YHack 2026 — March 28-29, Yale University. 24-hour hackathon. $100K prize pool. 600+ hackers.</p>
+    <div class="section-title">Schedule</div>
+    <div class="schedule-grid" id="scheduleGrid"></div>
+    <div class="section-title">Rules</div>
+    <div class="grid-4" id="rulesGrid"></div>
+    <div class="section-title">Locations</div>
+    <div class="grid-4" id="locationsGrid"></div>
+  </div>
+
+  <!-- P2 AWARDS -->
+  <div class="page" id="page-awards" data-title="Awards">
+    <h1 class="page-title">02 // Awards</h1>
+    <p class="page-desc">Complete prize map. Toggle priority per track. Filter to see only what we're targeting.</p>
+    <div class="award-filters" id="awardFilters"></div>
+    <div id="awardSummary" style="margin-bottom:16px;font-size:12px;"></div>
+    <div id="awardList"></div>
+  </div>
+
+  <!-- P3 BRAINSTORM -->
+  <div class="page" id="page-brainstorm" data-title="Brainstorm">
+    <h1 class="page-title">03 // Brainstorm</h1>
+    <p class="page-desc">Design Sprint: Map pain points, reframe as opportunities, generate ideas, park what doesn't fit.</p>
+
+    <!-- WINNING RULES REFERENCE (collapsible) -->
+    <details id="winningRules" style="margin-bottom:20px;border:3px solid var(--text);box-shadow:var(--shadow);">
+      <summary style="background:var(--text);color:var(--bg);padding:12px 16px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">&#11088;</span> Winning Rules — Keep These in Mind While Brainstorming
+      </summary>
+      <div style="padding:16px;background:var(--surface);font-size:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="border-left:4px solid var(--accent);padding:8px 12px;">
+            <strong style="color:var(--accent);">FROM JUDGES</strong>
+            <p style="margin-top:4px;">Judges decide in 60 seconds. Lead with WHY, not WHAT. A personal story beats a technical explanation every time. (Devpost: 5 seasoned judges)</p>
+          </div>
+          <div style="border-left:4px solid var(--accent);padding:8px 12px;">
+            <strong style="color:var(--accent);">THE WOW TEST</strong>
+            <p style="margin-top:4px;">If you can't describe your demo's "wow moment" in one sentence, your idea isn't differentiated enough. Shepherd won because "blindfolded obstacle course" = instant understanding.</p>
+          </div>
+          <div style="border-left:4px solid var(--medium);padding:8px 12px;">
+            <strong style="color:var(--medium);">SPONSOR = CORE</strong>
+            <p style="margin-top:4px;">If you can remove the sponsor API and the product still works, judges will notice. Sponsor tech must be load-bearing, not decorative. (Minerva won 2 tracks this way)</p>
+          </div>
+          <div style="border-left:4px solid var(--medium);padding:8px 12px;">
+            <strong style="color:var(--medium);">SCOPE KILLS</strong>
+            <p style="margin-top:4px;">Winners cut 60% of features by hour 6. A half-working feature is worse than a missing feature — it breaks during demo and destroys credibility. (Oleksandr, 47% win rate)</p>
+          </div>
+          <div style="border-left:4px solid var(--accent-2);padding:8px 12px;">
+            <strong style="color:var(--accent-2);">NOT ANOTHER CHATBOT</strong>
+            <p style="margin-top:4px;">If the core UX is "text input → text output," you look like every other team. Add a physical, visual, or voice interaction that judges can FEEL. (HospiTwin applied digital twin concept from manufacturing)</p>
+          </div>
+          <div style="border-left:4px solid var(--accent-2);padding:8px 12px;">
+            <strong style="color:var(--accent-2);">TIME SPLIT: 40/30/30</strong>
+            <p style="margin-top:4px;">40% building, 30% polish/demo, 30% pitch. Most teams do 95/5/0. Sze Yu Sim: "I spend 30% of hackathon time on the pitch." Plan the video BEFORE coding.</p>
+          </div>
+          <div style="border-left:4px solid var(--easy);padding:8px 12px;">
+            <strong style="color:var(--easy);">OUR EDGE</strong>
+            <p style="margin-top:4px;">A real doctor + multilingual team (EN/ZH/FR/AR) + AI agent builder. Most teams are 4 CS majors building chatbots. Our domain credibility can't be faked.</p>
+          </div>
+          <div style="border-left:4px solid var(--easy);padding:8px 12px;">
+            <strong style="color:var(--easy);">PROVEN PATTERN, NEW DOMAIN</strong>
+            <p style="margin-top:4px;">HospiTwin applied manufacturing digital twins to hospitals. We apply Artopath's knowledge graph to health records. Repurposing known patterns = "innovative" to judges.</p>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="brainstorm-toolbar" id="brainstormToolbar"></div>
+    <div class="kanban" id="kanbanBoard"></div>
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-claude" onclick="askClaude('brainstorm')">Ask Claude: Suggest Pain Points</button>
+      <button class="btn btn-claude" onclick="askClaude('ideas')">Ask Claude: Generate Ideas</button>
+      <button class="btn" style="background:var(--accent);color:#fff;border-color:var(--accent);" onclick="askClaude('guru')">Ask Hackathon Guru</button>
+      <button class="btn btn-secondary" onclick="syncBrainstorm()" id="syncBtn">Sync</button>
+    </div>
+  </div>
+
+  <!-- P4 LEGO BRICKS -->
+  <div class="page" id="page-bricks" data-title="Lego Bricks">
+    <h1 class="page-title">04 // Lego Bricks</h1>
+    <p class="page-desc">Each brick is a self-contained feature. Select bricks to assemble your MVP. Click INFO for detailed specs.</p>
+    <div class="coverage-sticky" id="coverageSticky"></div>
+    <div class="brick-toolbar" id="brickToolbar"></div>
+    <div class="brick-grid" id="brickGrid"></div>
+  </div>
+
+  <!-- P5 MVP BUILDER -->
+  <div class="page" id="page-mvp" data-title="MVP Builder">
+    <h1 class="page-title">05 // MVP Builder</h1>
+    <p class="page-desc">Product manager view. Selected bricks assembled with user stories, UX flow, timeline, and team assignments.</p>
+    <div id="mvpContent"></div>
+  </div>
+
+  <!-- P6 SUBMISSION -->
+  <div class="page" id="page-submit" data-title="Submission">
+    <h1 class="page-title">06 // Submission Guide</h1>
+    <p class="page-desc">Video submission 11:00-11:30am Sunday. Judging 12:00-2:30pm Kline Tower 205. Devpost required.</p>
+    <div id="submitContent"></div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="overlay-bg" id="overlayBg" onclick="closeDetail()"></div>
+<div class="detail-overlay" id="detailPanel">
+  <button class="detail-close" onclick="closeDetail()">&larr; Close [ESC]</button>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ DATA ============
+
+const PAGES = ['race','awards','brainstorm','bricks','mvp','submit'];
+
+const SCHEDULE = {
+  saturday: [
+    {time:'7:30 AM',event:'Check-in opens',loc:'OC Marsh',crit:false},
+    {time:'10:00 AM',event:'Opening Ceremony',loc:'OC Marsh',crit:false},
+    {time:'11:00 AM',event:'HACKING STARTS',loc:'All venues',crit:true},
+    {time:'1:00 PM',event:'Lunch',loc:'OC Marsh',crit:false},
+    {time:'6:00 PM',event:'Dinner',loc:'OC Marsh',crit:false},
+  ],
+  sunday: [
+    {time:'8:30 AM',event:'Breakfast',loc:'OC Marsh',crit:false},
+    {time:'11:00 AM',event:'HACKING STOPS + Video sub',loc:'',crit:true},
+    {time:'11:30 AM',event:'Video submission deadline',loc:'',crit:true},
+    {time:'12:00 PM',event:'Judging begins',loc:'Kline Tower 205',crit:true},
+    {time:'2:30 PM',event:'Judging ends',loc:'',crit:false},
+    {time:'3:00 PM',event:'Closing Ceremony + Awards',loc:'OC Marsh',crit:true},
+  ]
+};
+
+const RULES = [
+  {icon:'4',title:'Max 4 People',desc:'Team cannot exceed 4 members.'},
+  {icon:'&lt;/&gt;',title:'Code During Hours',desc:'All coding 11am Sat - 11am Sun. Brainstorming OK before.'},
+  {icon:'&#127909;',title:'Video Submission',desc:'11:00-11:30am Sunday. Must submit on Devpost.'},
+  {icon:'&#127380;',title:'Bring Both IDs',desc:'Government ID + University ID. MANDATORY.'},
+  {icon:'&#128100;',title:'In-Person Demo',desc:'At least 1 member must demo to judges in person.'},
+  {icon:'&#128269;',title:'Original Work',desc:'They WILL check your GitHub for original work.'},
+];
+
+const LOCATIONS = [
+  {icon:'&#127963;',title:'OC Marsh Lecture Hall',desc:'260 Whitney Ave. Main hub: registration, ceremonies, meals.'},
+  {icon:'&#127970;',title:'Kline Tower 205',desc:'219 Prospect St. Sponsor booths, hacking, workshops, JUDGING.'},
+  {icon:'&#127968;',title:'17 Hillhouse (HLH17)',desc:'17 Hillhouse Ave. Overflow hacking space.'},
+  {icon:'&#128225;',title:'WiFi: YaleGuest',desc:'Connect to YaleGuest network.'},
+];
+
+let AWARDS = [
+  {cat:'Grand Prize 1st',sponsor:'YHack',prize:'$4,000',priority:'high',group:'Grand Prize'},
+  {cat:'Grand Prize 2nd',sponsor:'YHack',prize:'$2,000',priority:'high',group:'Grand Prize'},
+  {cat:'Grand Prize 3rd',sponsor:'YHack',prize:'$1,000',priority:'high',group:'Grand Prize'},
+  {cat:'Personal AI Agent 1st',sponsor:'Harper',prize:'$2,000 + Meta Quest 3s + Interview',priority:'high',group:'Main Tracks'},
+  {cat:'Personal AI Agent 2nd',sponsor:'Harper',prize:'$1,500 + Mech Keyboards + Interview',priority:'high',group:'Main Tracks'},
+  {cat:'Personal AI Agent 3rd',sponsor:'Harper',prize:'$1,000 + Interview',priority:'high',group:'Main Tracks'},
+  {cat:'Societal Impact: Healthcare 1st',sponsor:'ASUS',prize:'GX10 + ZenScreen + ROG swag',priority:'high',group:'Main Tracks'},
+  {cat:'Societal Impact: Healthcare 2nd',sponsor:'ASUS',prize:'ZenScreen + ROG peripheral + swag',priority:'high',group:'Main Tracks'},
+  {cat:'Societal Impact: Education 1st',sponsor:'ASUS',prize:'GX10 + ZenScreen + ROG swag',priority:'high',group:'Main Tracks'},
+  {cat:'Societal Impact: Education 2nd',sponsor:'ASUS',prize:'2x ROG peripheral + swag',priority:'high',group:'Main Tracks'},
+  {cat:'Societal Impact: Sustainability 1st',sponsor:'ASUS',prize:'GX10 + ZenScreen + ROG swag',priority:'skip',group:'Main Tracks'},
+  {cat:'Entertainment 1st/2nd/3rd',sponsor:'Snapchat',prize:'$750 / $500 / $250',priority:'skip',group:'Main Tracks'},
+  {cat:'Prediction Markets 1st/2nd/3rd',sponsor:'Polymarket',prize:'$2,000 / $1,000 / $500',priority:'skip',group:'Main Tracks'},
+  {cat:'Hardware 1st/2nd/3rd',sponsor:'QNX',prize:'$2,000 / $1,000 / $500',priority:'skip',group:'Main Tracks'},
+  {cat:'Best Use K2 Think V2',sponsor:'MBZUAI',prize:'reMarkable tablet per member',priority:'high',group:'Sponsor Tracks'},
+  {cat:'Best Use Hex API 1st/2nd/3rd',sponsor:'Hex',prize:'$2,000 / $1,000 / $500',priority:'med',group:'Sponsor Tracks'},
+  {cat:'Built with Zed',sponsor:'Zed',prize:'Cash + 1:1 CTO Superhuman + Pro + merch',priority:'high',group:'Sponsor Tracks'},
+  {cat:'Best Use of Hermes',sponsor:'Nous Research',prize:'TBD',priority:'med',group:'Sponsor Tracks'},
+  {cat:'Best Use Snap Lens Studio',sponsor:'Snapchat',prize:'$1,500 / $1,000 / $500',priority:'skip',group:'Sponsor Tracks'},
+  {cat:'Best Use of Lava API',sponsor:'Lava',prize:'TBD',priority:'skip',group:'Sponsor Tracks'},
+  {cat:'Best Use of Viam',sponsor:'Viam',prize:'Rover 2 per member',priority:'skip',group:'Sponsor Tracks'},
+  {cat:'Best UI/UX',sponsor:'Category',prize:'$100',priority:'med',group:'Category Tracks'},
+  {cat:'Most Creative Hack',sponsor:'Category',prize:'$100',priority:'med',group:'Category Tracks'},
+  {cat:'Most on Theme (Love)',sponsor:'Category',prize:'$100',priority:'skip',group:'Category Tracks'},
+  {cat:'Best First Hack',sponsor:'Category',prize:'$400',priority:'skip',group:'Category Tracks'},
+  {cat:'Best Solo Hack',sponsor:'Category',prize:'Framework Laptop',priority:'skip',group:'Category Tracks'},
+  {cat:'Most Useless Hack',sponsor:'Category',prize:'Useless Prize',priority:'skip',group:'Category Tracks'},
+  {cat:'Most Viral Post',sponsor:'Category',prize:'$100',priority:'skip',group:'Category Tracks'},
+  {cat:'Gemini API',sponsor:'Google (MLH)',prize:'TBD (Swag Kits)',priority:'high',group:'MLH'},
+  {cat:'ElevenLabs',sponsor:'ElevenLabs (MLH)',prize:'TBD (Earbuds)',priority:'high',group:'MLH'},
+  {cat:'GoDaddy Domain',sponsor:'GoDaddy (MLH)',prize:'TBD (Gift Card)',priority:'med',group:'MLH'},
+  {cat:'MongoDB Atlas',sponsor:'MongoDB (MLH)',prize:'TBD (IoT Kit)',priority:'med',group:'MLH'},
+  {cat:'Auth0 AI Agents',sponsor:'Auth0 (MLH)',prize:'TBD (Headphones)',priority:'med',group:'MLH'},
+  {cat:'Solana',sponsor:'Solana (MLH)',prize:'TBD (Ledger Nano)',priority:'skip',group:'MLH'},
+];
+
+let BRAINSTORM = {
+  painpoints: [
+    {id:'pp1',title:'ER Communication Gap',desc:'Patients say "I feel dizzy" but clinicians need standardized severity, onset, associated symptoms. 15 min wasted per visit.',who:'Patients + ER nurses',consumer:'ER patients (all ages), triage nurses, emergency physicians',market:'130M US ER visits/year. $328B US emergency medicine market. Every hospital has this problem.'},
+    {id:'pp2',title:'Scattered Health Records',desc:'Vaccine records in 5 portals. No single source of truth. Switch doctors = start from scratch.',who:'Everyone',consumer:'Patients who switch providers, travelers, parents tracking kids\' vaccines',market:'330M Americans with fragmented records. $7.2B health information exchange market.'},
+    {id:'pp3',title:'Language Barriers in Healthcare',desc:'Non-English speakers can\'t describe symptoms accurately. Translators are scarce. Misdiagnosis risk.',who:'Immigrant patients, international travelers',consumer:'67M US residents who speak non-English at home, medical tourists, refugees',market:'67M LEP (Limited English Proficiency) individuals in US. $3.1B medical interpretation market.'},
+    {id:'pp4',title:'Doctors Re-Asking Questions',desc:'Nurse asks intake questions, doctor asks the same ones. Patient repeats story 3 times.',who:'Patients + Clinicians',consumer:'All patients visiting any clinic or ER, front-desk staff, nurses, doctors',market:'1B+ annual US outpatient visits. Each redundant intake = 10-15 min wasted clinician time.'},
+    {id:'pp5',title:'Pet Owners Can\'t Describe Symptoms',desc:'Even worse than humans. "My dog is acting weird" tells the vet nothing.',who:'Pet owners',consumer:'67% of US households (86.9M homes) own a pet. 200M+ vet visits/year.',market:'$35.9B US veterinary services market. Pet owners spend avg $367/year on vet visits.'},
+    {id:'pp6',title:'Health Literacy Gap',desc:'Patients leave the doctor not understanding their diagnosis, medications, or next steps.',who:'Patients with low health literacy',consumer:'36% of US adults have basic/below-basic health literacy. Elderly, immigrants, low-income.',market:'Low health literacy costs US $236B/year in avoidable ER visits and complications.'},
+  ],
+  hmw: [
+    {id:'hmw1',title:'HMW bridge the patient-clinician communication gap?',linked:'pp1'},
+    {id:'hmw2',title:'HMW make health records portable and always up-to-date?',linked:'pp2'},
+    {id:'hmw3',title:'HMW enable multilingual healthcare without human translators?',linked:'pp3'},
+    {id:'hmw4',title:'HMW eliminate repeated intake questioning?',linked:'pp4'},
+    {id:'hmw5',title:'HMW help patients understand their own health?',linked:'pp6'},
+  ],
+  ideas: [
+    {id:'idea1',title:'AI Triage Intake on Tablet',desc:'Visual pain scales + body maps + AI follow-up questions. Generates triage summary for clinician.',hmw:'hmw1',impact:'high'},
+    {id:'idea2',title:'Multilingual Voice Health Assistant',desc:'Speak in any language, AI translates to clinical terms and asks structured follow-ups.',hmw:'hmw3',impact:'high'},
+    {id:'idea3',title:'Personal Health Knowledge Graph',desc:'Ingest all records, check vaccine status, drug interactions, travel recommendations.',hmw:'hmw2',impact:'high'},
+    {id:'idea4',title:'Diagnosis Explainer',desc:'After visit: explain diagnosis in plain language adapted to patient literacy level.',hmw:'hmw5',impact:'med'},
+    {id:'idea5',title:'Vet Triage Mode',desc:'Same triage pattern for pet hospitals. Species selector + common pet emergencies.',hmw:'hmw1',impact:'med'},
+  ],
+  parked: []
+};
+
+const ALL_PRIZES = [
+  'Grand Prize','Harper AI Agent','Healthcare (ASUS)','Education (ASUS)',
+  'K2 Think V2','Gemini (MLH)','ElevenLabs (MLH)','Built with Zed',
+  'Hex API','Hermes','Best UI/UX','GoDaddy (MLH)',
+  'MongoDB (MLH)','Auth0 (MLH)','Most Creative'
+];
+
+const CRITERIA = {
+  'Grand Prize': 'Best overall project — technical depth + impact + polish + presentation',
+  'Harper AI Agent': '"Intelligent agents that automate real business workflows and decision-making"',
+  'Healthcare (ASUS)': '"Innovation leading to most significant societal impact" — Healthcare sub-track',
+  'Education (ASUS)': '"Innovation leading to most significant societal impact" — Education sub-track',
+  'K2 Think V2': '"Real, non-trivial use of advanced reasoning in real-world scenarios. K2 Think V2 as a core part, not a side API call."',
+  'Gemini (MLH)': 'Best use of Google Gemini API',
+  'ElevenLabs (MLH)': 'Best use of ElevenLabs audio AI',
+  'Built with Zed': '"Most fast, thoughtful project that solves a real world problem. Built using Zed!"',
+  'Hex API': '"Most interesting usage of Hex API"',
+  'Hermes': 'Best use of Hermes API (Nous Research)',
+  'Best UI/UX': '"Most intuitive, polished, and delightful user experience"',
+};
+
+let BRICKS = [
+  {id:'reasoning',emoji:'\u{1F9E0}',name:'AI Reasoning Engine',desc:'Dual-model: Gemini 2.5 Flash ($310 credits) + K2 Think V2 (free 70B reasoning)',category:'core',difficulty:'medium',timeHours:3,selected:true,
+    prizes:['Grand Prize','Gemini (MLH)','K2 Think V2'],
+    tech:{recommended:'Gemini 2.5 Flash as primary + K2 Think V2 (build.k2think.ai) for deep reasoning. LangChain or raw API.',trending:'LangGraph (stateful agents), Vercel AI SDK (streaming), OpenRouter',prizeAlt:'Gemini = MLH prize. K2 Think = MBZUAI prize. Both covered.',notes:'K2 Think V2 excels at multi-step reasoning. Use for differential diagnosis. Gemini for fast language understanding.'},
+    firstStep:'Set up Gemini API call: single symptom string in → structured JSON triage out. Validate response format.',
+    dod:'Given a natural-language symptom description, system returns structured JSON with: severity (1-10), urgency level, suggested department, follow-up questions. Works in <3 seconds.',
+    hardest:'Prompt engineering for consistent structured output. Edge cases where symptoms are ambiguous.',
+    deps:[],
+    teamAssign:{austin:'Agent architecture, prompt engineering',cs:'API integration, response parsing',medical:'Clinical reasoning validation',consultant:''}
+  },
+  {id:'voice',emoji:'\u{1F5E3}',name:'Multi-Language Voice I/O',desc:'Voice input/output in EN, ZH, FR, AR, ES with natural speech',category:'core',difficulty:'medium',timeHours:3,selected:true,
+    prizes:['ElevenLabs (MLH)','Best UI/UX'],
+    tech:{recommended:'ElevenLabs Conversational AI (best quality, multilingual). STT: Whisper API or Web Speech API. TTS: ElevenLabs.',trending:'ElevenLabs Conversational AI, Deepgram Nova-3, Cartesia Sonic',prizeAlt:'ElevenLabs = MLH prize. Whisper = free STT alternative.',notes:'ElevenLabs supports 29 languages including ZH, FR, AR, ES.'},
+    firstStep:'Get ElevenLabs API key. Test TTS in English + Chinese with a medical sentence. Verify pronunciation quality.',
+    dod:'Patient speaks in their language (tested: EN, ZH, FR). AI responds verbally in same language. Transcription accuracy >90% for medical terms.',
+    hardest:'Medical terminology pronunciation in non-English languages. Real-time latency for conversational flow.',
+    deps:[],
+    teamAssign:{austin:'ElevenLabs integration, voice UI',cs:'Audio pipeline, WebSocket streaming',medical:'Test medical term pronunciation',consultant:''}
+  },
+  {id:'ui',emoji:'\u{1F4BB}',name:'Polished Tablet/Web UI',desc:'React frontend, tablet-optimized for ER intake + desktop dashboard',category:'core',difficulty:'medium',timeHours:4,selected:true,
+    prizes:['Built with Zed','Best UI/UX'],
+    tech:{recommended:'Next.js 15 or Vite+React 19. TailwindCSS v4. Framer Motion. Build in Zed editor.',trending:'React 19, TailwindCSS v4, Shadcn/ui, Framer Motion 12',prizeAlt:'Building in Zed = Zed prize. Polish = Best UI/UX.',notes:'Tablet-first: large touch targets (44px min), simple forms, high contrast. Test on iPad 1024x768.'},
+    firstStep:'Create React app (Vite). Install Tailwind + Framer Motion. Build language selector + first symptom question screen.',
+    dod:'Clean, responsive UI that works on tablet and desktop. Language selector, symptom intake flow, results dashboard. Feels fast and intuitive.',
+    hardest:'Making it feel polished in 24 hours. Tablet touch interactions. Responsive layout across devices.',
+    deps:[],
+    teamAssign:{austin:'Component architecture, design system',cs:'API layer, data fetching',medical:'UX feedback from clinical lens',consultant:'User flow critique'}
+  },
+  {id:'triage',emoji:'\u{1F3E5}',name:'Smart ER Intake / Triage',desc:'AI symptom questionnaire with human factors: visual pain scales, body maps, structured severity',category:'healthcare',difficulty:'medium',timeHours:4,selected:true,
+    prizes:['Healthcare (ASUS)','Grand Prize','Harper AI Agent'],
+    tech:{recommended:'Custom React form wizard + LLM follow-up logic. Wong-Baker FACES pain scale. SVG body map. Gemini JSON mode.',trending:'React Hook Form + Zod, interactive SVG body maps, LLM structured output',prizeAlt:'Healthcare = ASUS. Agentic workflow = Harper. Grand Prize for overall quality.',notes:'Human factors differentiator: map vague patient language to standardized clinical descriptors. Use validated assessment patterns (PHQ-9, GAD-7).'},
+    firstStep:'Build the pain scale component (0-10 with face icons). Hard-code 5 triage questions. Wire to Gemini for follow-up generation.',
+    dod:'Patient completes guided intake: pain scale, body map location, structured symptom questions. System generates 1-page triage summary with severity score for the clinician.',
+    hardest:'Designing symptom decision trees that are medically accurate AND user-friendly. Balancing guided flow vs. free-form input.',
+    deps:['reasoning','ui'],
+    teamAssign:{austin:'Form wizard, body map UI',cs:'Triage logic backend, scoring',medical:'Symptom trees, severity scales, clinical validation',consultant:'User flow, accessibility'}
+  },
+  {id:'explainer',emoji:'\u{1F4D6}',name:'Diagnosis Explainer',desc:'Explain diagnosis in plain language, adapts to patient literacy level',category:'education',difficulty:'easy',timeHours:2,selected:true,
+    prizes:['Education (ASUS)'],
+    tech:{recommended:'LLM with reading-level prompt engineering (Flesch-Kincaid targeting). Multi-language output.',trending:'LLM reading-level control, plain language medical summaries',prizeAlt:'Education = ASUS prize. Same LLM, different prompt.',notes:'Low effort, high impact. Unlocks entire Education sub-track.'},
+    firstStep:'Write a prompt that takes a diagnosis name and outputs a 3-paragraph plain-language explanation at a 6th-grade reading level.',
+    dod:'Given any common diagnosis, system generates clear explanation in patient\'s language with: what it is, what to do, when to come back. Reading level verified.',
+    hardest:'Ensuring medical accuracy while maintaining simplicity. Not oversimplifying dangerous conditions.',
+    deps:['reasoning'],
+    teamAssign:{austin:'Explainer UI, reading-level selector',cs:'API endpoint',medical:'Validate medical accuracy',consultant:'Test readability'}
+  },
+  {id:'vaccine',emoji:'\u{1F489}',name:'Vaccine Tracker',desc:'Check vaccine status, what is due, travel vaccine advisor',category:'healthcare',difficulty:'easy',timeHours:2,selected:true,
+    prizes:['Healthcare (ASUS)','Harper AI Agent'],
+    tech:{recommended:'CDC immunization schedule data. Simple CRUD. LLM for travel recommendations by country.',trending:'CDC API, WHO IRIS, simple React state',prizeAlt:'Strengthens Healthcare + Personal AI Agent.',notes:'High demo value. "Your tetanus is 2 years overdue." Universally relatable.'},
+    firstStep:'Hard-code CDC adult vaccine schedule as JSON. Build UI that takes birth date + last vaccines → shows what\'s due.',
+    dod:'Patient enters vaccine history. System shows: up-to-date/overdue vaccines, travel recommendations for destination country, next appointment dates.',
+    hardest:'Accurate vaccine scheduling rules (booster intervals, age-based requirements). Travel vaccine data completeness.',
+    deps:['ui'],
+    teamAssign:{austin:'Vaccine timeline UI',cs:'CDC data integration, CRUD',medical:'Validate schedule accuracy',consultant:'Travel use case narrative'}
+  },
+  {id:'workflow',emoji:'\u{1F916}',name:'Agentic Workflow',desc:'Multi-step autonomous: intake -> triage -> records -> insurance -> handoff',category:'enterprise',difficulty:'medium',timeHours:3,selected:true,
+    prizes:['Harper AI Agent','Grand Prize'],
+    tech:{recommended:'LangGraph or custom state machine. Steps: symptoms -> severity -> records -> insurance -> report.',trending:'LangGraph, CrewAI, Autogen, Custom FSM',prizeAlt:'Harper = $2K + Quest 3s. "Automate real business workflows."',notes:'This is what makes it an enterprise AI agent vs chatbot. Multi-step autonomy is Harper\'s ask.'},
+    firstStep:'Define the state machine: 5 states with transitions. Implement first 2 states (collect symptoms -> assess severity) with Gemini tool-calling.',
+    dod:'Agent autonomously walks through: patient intake -> triage scoring -> generate clinical summary -> recommend next steps. Each step logged and visible.',
+    hardest:'State management across async LLM calls. Error recovery when agent gets confused mid-workflow.',
+    deps:['reasoning','triage'],
+    teamAssign:{austin:'Agent architecture, state machine',cs:'Tool integrations, execution engine',medical:'Validate workflow matches clinical reality',consultant:'Enterprise pitch framing'}
+  },
+  {id:'export',emoji:'\u{1F4C4}',name:'Structured Record Export',desc:'Generate standardized patient intake form as PDF',category:'enterprise',difficulty:'easy',timeHours:1.5,selected:true,
+    prizes:['Harper AI Agent'],
+    tech:{recommended:'React-PDF or html2pdf.js. 1-page patient summary: demographics, symptoms, severity, triage, recommendations.',trending:'React-PDF, Puppeteer PDF, html2canvas + jsPDF',prizeAlt:'Strengthens Harper enterprise angle.',notes:'Low effort, high demo value. "Here\'s what the doctor sees before walking in."'},
+    firstStep:'Create an HTML template for the 1-page summary. Use html2pdf.js to convert to PDF on button click.',
+    dod:'After triage completion, system generates a clean 1-page PDF with: patient info, symptoms, severity, triage level, AI-recommended actions.',
+    hardest:'PDF formatting and layout. Making it look professional, not like a raw data dump.',
+    deps:['triage'],
+    teamAssign:{austin:'PDF template design',cs:'PDF generation endpoint',medical:'Validate report format',consultant:''}
+  },
+  {id:'vet',emoji:'\u{1F43E}',name:'Vet Triage Mode',desc:'Same triage for pet hospitals. Pet owners describe symptoms even worse than humans.',category:'healthcare',difficulty:'easy',timeHours:2,selected:false,
+    prizes:['Healthcare (ASUS)','Most Creative'],
+    tech:{recommended:'Same as triage, different prompts. Species selector. Common pet emergencies.',trending:'Same stack, new prompt templates',prizeAlt:'Most Creative = $100. Reuses triage architecture.',notes:'Great demo wow factor. 5 min of prompt engineering if triage is done.'},
+    firstStep:'Add species selector (dog/cat/bird) to triage UI. Write vet-specific prompt template.',
+    dod:'Pet owner selects species, describes symptoms. AI asks vet-appropriate follow-ups. Generates vet triage summary.',
+    hardest:'Nothing hard if triage is done. Just prompt engineering for veterinary context.',
+    deps:['triage'],
+    teamAssign:{austin:'Species selector UI',cs:'API route for vet mode',medical:'Common pet emergency protocols',consultant:'Demo narrative angle'}
+  },
+  {id:'drugs',emoji:'\u{1F48A}',name:'Drug Interaction Checker',desc:'Check medication interactions given current meds + new prescription',category:'healthcare',difficulty:'medium',timeHours:3,selected:false,
+    prizes:['Healthcare (ASUS)','K2 Think V2'],
+    tech:{recommended:'OpenFDA Drug Interaction API (free). K2 Think for pharmacology reasoning.',trending:'OpenFDA API, RxNorm, K2 Think V2',prizeAlt:'K2 Think = MBZUAI prize for reasoning over interactions.',notes:'K2 Think shines: multi-step CYP enzyme interaction reasoning.'},
+    firstStep:'Call OpenFDA API with 2 drug names. Parse interaction warnings. Display in UI.',
+    dod:'Patient enters current medications + new prescription. System checks interactions and displays: severity, mechanism, recommendation.',
+    hardest:'Drug name normalization (brand vs generic). Interaction database completeness.',
+    deps:['reasoning'],
+    teamAssign:{austin:'Drug search UI',cs:'OpenFDA integration',medical:'Validate interaction severity',consultant:''}
+  },
+  {id:'scribe',emoji:'\u{1F4CB}',name:'Medical Scribe',desc:'Listen to doctor-patient conversation, generate SOAP notes, collaborative editing',category:'healthcare',difficulty:'hard',timeHours:5,selected:false,
+    prizes:['Built with Zed','Healthcare (ASUS)'],
+    tech:{recommended:'STT (Whisper/ElevenLabs) -> LLM SOAP note -> Collaborative editor (Yjs CRDT).',trending:'Yjs, Tiptap, AssemblyAI medical STT',prizeAlt:'Zed: collaborative editing angle.',notes:'Hard: 3 complex systems. Consider: record -> process -> editable output.'},
+    firstStep:'Record 30-second audio. Transcribe with Whisper. Feed to Gemini with SOAP template prompt.',
+    dod:'Audio recording of conversation -> auto-generated SOAP note (Subjective, Objective, Assessment, Plan) -> editable by clinician.',
+    hardest:'Real-time transcription quality. SOAP note accuracy. Collaborative editing adds complexity.',
+    deps:['reasoning','voice','ui'],
+    teamAssign:{austin:'Editor UI, SOAP template',cs:'Transcription pipeline, WebSocket',medical:'SOAP note format validation',consultant:''}
+  },
+  {id:'study',emoji:'\u{1F393}',name:'Study Companion',desc:'Personal AI tutor with knowledge graph for health or academic topics',category:'education',difficulty:'hard',timeHours:4,selected:false,
+    prizes:['Education (ASUS)','Harper AI Agent'],
+    tech:{recommended:'Knowledge graph (JSON). Spaced repetition (FSRS). Card-based learning UI.',trending:'FSRS, Knowledge graphs in JSON-LD, Adaptive LLM',prizeAlt:'Education = ASUS. Reuses Artopath/AIOS pattern.',notes:'Austin built this exact pattern. But scope is large. Consider health-education-only.'},
+    firstStep:'Define 10 health topics as JSON graph. Build flashcard UI. Wire LLM for adaptive question generation.',
+    dod:'Patient can explore their conditions as a knowledge graph, get adaptive quizzes, track learning progress.',
+    hardest:'Scope. Knowledge graph + spaced repetition + adaptive AI = ambitious for 24h.',
+    deps:['reasoning','ui'],
+    teamAssign:{austin:'Knowledge graph, learning UI',cs:'Graph persistence, query engine',medical:'Medical curriculum content',consultant:'Learning experience design'}
+  },
+  {id:'dashboard',emoji:'\u{1F4CA}',name:'Health Literacy Dashboard',desc:'Visual dashboard showing patient health journey with data analytics',category:'education',difficulty:'medium',timeHours:3,selected:false,
+    prizes:['Hex API','Education (ASUS)'],
+    tech:{recommended:'Hex API for analytics + viz. Alt: Recharts, D3.js.',trending:'Hex API (sponsor!), Recharts, Observable Plot',prizeAlt:'Hex API = $2K prize. Must use Hex specifically.',notes:'Worth $2K. Learn their API at the event.'},
+    firstStep:'Get Hex API key. Create a simple chart: patient medication timeline. Embed in React.',
+    dod:'Dashboard with: conditions timeline, medication history, risk factors visualization. Powered by Hex API.',
+    hardest:'Learning Hex API during hackathon. Data pipeline from patient records to Hex.',
+    deps:['ui'],
+    teamAssign:{austin:'Dashboard layout, charts',cs:'Hex API integration',medical:'Clinical relevance of metrics',consultant:'Data storytelling'}
+  },
+  {id:'insurance',emoji:'\u{1F3E5}',name:'Insurance Pre-Check',desc:'Check insurance coverage during intake',category:'enterprise',difficulty:'easy',timeHours:2,selected:false,
+    prizes:['Harper AI Agent'],
+    tech:{recommended:'Mock API for demo. Real: Eligible API.',trending:'Eligible API, Oscar Health API',prizeAlt:'Harper = insurance company. They will love this.',notes:'Use mock data. Show architecture for real API.'},
+    firstStep:'Create mock insurance API with 3 plans. Build UI: enter plan ID -> see coverage for visit type.',
+    dod:'During intake, system checks insurance coverage and displays: copay, coverage %, pre-authorization status.',
+    hardest:'Nothing hard with mock data. Real API integration would be complex.',
+    deps:['triage'],
+    teamAssign:{austin:'',cs:'Insurance API mock',medical:'Common scenarios',consultant:'Business case'}
+  },
+  {id:'auth',emoji:'\u{1F510}',name:'Patient Auth',desc:'Auth0 for secure patient identity verification',category:'enterprise',difficulty:'easy',timeHours:1.5,selected:false,
+    prizes:['Auth0 (MLH)'],
+    tech:{recommended:'Auth0 Universal Login + React SDK. 7K free MAU.',trending:'Auth0, Clerk, NextAuth v5',prizeAlt:'Auth0 = MLH prize (headphones).',notes:'Quick win. Role-based: patient vs clinician views.'},
+    firstStep:'Create Auth0 app. Add login button. Protect clinician dashboard route.',
+    dod:'Patients and clinicians have separate login flows. Patient sees their records. Clinician sees triage queue.',
+    hardest:'Nothing hard. Auth0 SDK is well-documented.',
+    deps:['ui'],
+    teamAssign:{austin:'Auth0 React integration',cs:'Backend auth middleware',medical:'',consultant:'HIPAA talking point'}
+  },
+  {id:'knowledgegraph',emoji:'\u{1F4BE}',name:'Health Knowledge Graph',desc:'Persistent patient health profile: conditions, meds, allergies, family history',category:'enterprise',difficulty:'medium',timeHours:3,selected:false,
+    prizes:['MongoDB (MLH)','Harper AI Agent'],
+    tech:{recommended:'MongoDB Atlas ($50 credits). Schema: patient -> conditions, meds, allergies.',trending:'MongoDB Atlas with Vector Search, Supabase',prizeAlt:'MongoDB = MLH prize. Atlas Vector Search for semantic queries.',notes:'Austin built this for Artopath (29-table model). Adapt the pattern.'},
+    firstStep:'Create MongoDB Atlas cluster. Define patient schema. Build simple CRUD API.',
+    dod:'Patient health profile persisted in MongoDB. Agent queries it during triage for context. Data survives page refresh.',
+    hardest:'Schema design for medical records. FHIR compliance if going for credibility.',
+    deps:['reasoning'],
+    teamAssign:{austin:'Schema design',cs:'MongoDB setup, CRUD API',medical:'Clinical data model',consultant:''}
+  },
+];
+
+const NARRATIVE = [
+  {num:'01',title:'THE PROBLEM',desc:'Open in an ER waiting room. "Every year, 130M Americans visit the ER. The first 15 minutes are wasted."'},
+  {num:'02',title:'THE INSIGHT',desc:'"The bottleneck isn\'t doctor shortage — it\'s a communication gap. Patients can\'t describe symptoms in clinical terms."'},
+  {num:'03',title:'THE PRODUCT',desc:'Show tablet. Patient selects language. Visual pain scale appears. Body map for location.'},
+  {num:'04',title:'MULTILINGUAL DEMO',desc:'Live voice in Chinese/French/Arabic. AI translates to clinical terms. "Healthcare that speaks your language."'},
+  {num:'05',title:'CLINICAL OUTPUT',desc:'1-page triage summary. SOAP notes. Drug check. "The doctor walks in already knowing."'},
+  {num:'06',title:'EDUCATION',desc:'After visit: "You have X. Here\'s what it means." Plain-language. Vaccine status. "Care doesn\'t end at the door."'},
+  {num:'07',title:'ENTERPRISE VALUE',desc:'"15 min saved per patient. 130M visits/year. 32.5M hours of clinician time recovered."'},
+  {num:'08',title:'TEAM',desc:'"A doctor with 7 years training. An AI systems engineer. A CS expert. A strategist."'},
+];
+
+const JUDGE_POINTS = [
+  {track:'Grand Prize',points:'Lead with impact (130M visits). Show technical depth (dual-model reasoning). Team diversity.'},
+  {track:'Harper (AI Agent)',points:'"Enterprise AI agent automating the most broken healthcare workflow — patient intake."'},
+  {track:'ASUS Healthcare',points:'"A real clinician designed every question. Visual pain scales. Multilingual."'},
+  {track:'ASUS Education',points:'"After diagnosis, patients get plain-language explanation. Health literacy is education."'},
+  {track:'K2 Think V2',points:'"K2 Think V2 for differential diagnosis — multi-step reasoning over symptoms and drug interactions."'},
+  {track:'Zed',points:'"Entire project built in Zed. Fast, thoughtful, solves a real-world problem."'},
+  {track:'Gemini (MLH)',points:'"Gemini 2.5 Flash powers core reasoning — fast, multilingual, structured JSON output."'},
+  {track:'ElevenLabs (MLH)',points:'"5-language voice I/O. ElevenLabs makes it feel like talking to a real nurse."'},
+];
+
+// ============ STATE ============
+let currentPage = 'race';
+let awardFilter = 'all';
+
+function saveState() {
+  const state = {
+    awards: AWARDS.map(a => ({cat:a.cat, priority:a.priority})),
+    brainstorm: BRAINSTORM,
+    bricks: BRICKS.map(b => ({id:b.id, selected:b.selected})),
+    currentPage
+  };
+  try { localStorage.setItem('yhack-war-room', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('yhack-war-room');
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    if (state.awards) state.awards.forEach(sa => {
+      const a = AWARDS.find(x => x.cat === sa.cat);
+      if (a) a.priority = sa.priority;
+    });
+    if (state.brainstorm) BRAINSTORM = state.brainstorm;
+    if (state.bricks) state.bricks.forEach(sb => {
+      const b = BRICKS.find(x => x.id === sb.id);
+      if (b) b.selected = sb.selected;
+    });
+    if (state.currentPage) currentPage = state.currentPage;
+  } catch(e) {}
+}
+
+function exportState() {
+  const blob = new Blob([JSON.stringify({awards:AWARDS,brainstorm:BRAINSTORM,bricks:BRICKS},null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'yhack-warroom-state.json'; a.click();
+}
+
+function importState() {
+  const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.awards) AWARDS = data.awards;
+        if (data.brainstorm) BRAINSTORM = data.brainstorm;
+        if (data.bricks) BRICKS = data.bricks;
+        saveState(); renderAll();
+        showToast('State imported!');
+      } catch(e) { showToast('Invalid JSON file'); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+// ============ RENDER ============
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+page)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+  saveState();
+}
+
+function renderSidebar() {
+  const labels = {race:'Race Info',awards:'Awards',brainstorm:'Brainstorm',bricks:'Lego Bricks',mvp:'MVP Builder',submit:'Submission'};
+  document.getElementById('sidebarNav').innerHTML = PAGES.map((p,i) => `
+    <div class="nav-item${p===currentPage?' active':''}" data-page="${p}" onclick="navigate('${p}')">
+      <div class="nav-num">0${i+1}</div>
+      <div class="nav-label">${labels[p]}</div>
+      <div class="nav-dot${getPageCompletion(p)?' filled':''}"></div>
+    </div>
+  `).join('');
+}
+
+function getPageCompletion(page) {
+  if (page==='race') return true;
+  if (page==='awards') return AWARDS.some(a=>a.priority!=='skip');
+  if (page==='brainstorm') return BRAINSTORM.ideas.length>0;
+  if (page==='bricks') return BRICKS.some(b=>b.selected);
+  if (page==='mvp') return BRICKS.filter(b=>b.selected).length>=3;
+  if (page==='submit') return true;
+  return false;
+}
+
+// P1: RACE
+function renderRace() {
+  document.getElementById('scheduleGrid').innerHTML = ['saturday','sunday'].map(day => `
+    <div class="schedule-day"><h3>${day==='saturday'?'SAT MARCH 28':'SUN MARCH 29'}</h3>
+    ${SCHEDULE[day].map(s => `<div class="schedule-item${s.crit?' critical':''}"><span class="time">${s.time}</span><span>${s.event}${s.loc?' — '+s.loc:''}</span></div>`).join('')}</div>
+  `).join('');
+  document.getElementById('rulesGrid').innerHTML = RULES.map(r => `<div class="card" style="padding:14px;box-shadow:var(--shadow-sm);"><div style="font-size:22px;margin-bottom:6px;">${r.icon}</div><h4 style="font-size:11px;margin-bottom:4px;">${r.title}</h4><p style="font-size:10px;color:var(--text-dim);">${r.desc}</p></div>`).join('');
+  document.getElementById('locationsGrid').innerHTML = LOCATIONS.map(l => `<div class="card" style="padding:14px;box-shadow:var(--shadow-sm);"><div style="font-size:22px;margin-bottom:6px;">${l.icon}</div><h4 style="font-size:11px;margin-bottom:4px;">${l.title}</h4><p style="font-size:10px;color:var(--text-dim);">${l.desc}</p></div>`).join('');
+}
+
+// P2: AWARDS
+function renderAwards() {
+  const high = AWARDS.filter(a=>a.priority==='high').length;
+  const med = AWARDS.filter(a=>a.priority==='med').length;
+  document.getElementById('awardSummary').innerHTML = `<span class="tag tag-high">${high} HIGH</span> <span class="tag tag-med">${med} MEDIUM</span> <span class="tag">${AWARDS.length} TOTAL</span>`;
+  document.getElementById('awardFilters').innerHTML = ['all','high','med','skip'].map(f =>
+    `<button class="btn${awardFilter===f?' btn-primary':' btn-secondary'}" onclick="awardFilter='${f}';renderAwards();">${f==='all'?'All':f==='high'?'HIGH':f==='med'?'MEDIUM':'Skipped'}</button>`
+  ).join('');
+  const filtered = awardFilter==='all' ? AWARDS : AWARDS.filter(a=>a.priority===awardFilter);
+  let lastGroup = '';
+  document.getElementById('awardList').innerHTML = filtered.map(a => {
+    let groupHeader = '';
+    if (a.group !== lastGroup) { lastGroup = a.group; groupHeader = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;padding:12px 0 6px;border-bottom:2px solid var(--text);margin-top:16px;">${a.group}</div>`; }
+    return groupHeader + `<div class="award-row${a.priority==='skip'?' skipped':''}">
+      <div class="award-priority ${a.priority}"></div>
+      <div class="award-body"><span class="award-cat">${a.cat}</span><span class="award-sponsor">${a.sponsor}</span><span class="award-prize">${a.prize}</span></div>
+      <div class="award-actions">
+        <button class="${a.priority==='high'?'active':''}" onclick="setPriority('${a.cat}','high')">H</button>
+        <button class="${a.priority==='med'?'active':''}" onclick="setPriority('${a.cat}','med')">M</button>
+        <button class="${a.priority==='skip'?'active':''}" onclick="setPriority('${a.cat}','skip')">S</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setPriority(cat, priority) {
+  const a = AWARDS.find(x => x.cat === cat);
+  if (a) { a.priority = priority; saveState(); renderAwards(); }
+}
+
+// P3: BRAINSTORM — Thread colors + hover + focus
+const THREAD_COLORS = ['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#264653','#7209b7','#3a86a7'];
+let focusedThread = null; // pp id or null
+let apiAvailable = null; // null=unknown, true/false
+
+function getThreadColor(ppId) {
+  const idx = BRAINSTORM.painpoints.findIndex(p => p.id === ppId);
+  return THREAD_COLORS[idx % THREAD_COLORS.length] || '#999';
+}
+
+function getPpForItem(col, item) {
+  if (col === 'painpoints') return item.id;
+  if (col === 'hmw') return item.linked;
+  if (col === 'ideas') {
+    const hmw = BRAINSTORM.hmw.find(h => h.id === item.hmw);
+    return hmw ? hmw.linked : null;
+  }
+  return null;
+}
+
+function renderBrainstormToolbar() {
+  const chips = BRAINSTORM.painpoints.map(pp => {
+    const color = getThreadColor(pp.id);
+    const active = focusedThread === pp.id;
+    return `<span class="thread-chip${active?' active':''}" style="border-color:${color};${active?`background:${color};color:#fff;`:`color:${color};`}" onclick="toggleThreadFocus('${pp.id}')">${pp.title.substring(0,20)}${pp.title.length>20?'...':''}</span>`;
+  }).join('');
+  const syncStatus = apiAvailable === true ? '<span class="sync-indicator" style="color:var(--easy);border-color:var(--easy);">SYNCED</span>' : apiAvailable === false ? '<span class="sync-indicator" style="color:var(--text-dim);border-color:#ccc;">LOCAL</span>' : '';
+  document.getElementById('brainstormToolbar').innerHTML = `<span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);">Threads:</span> ${chips} <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);cursor:pointer;" onclick="focusedThread=null;renderBrainstorm();">ALL</span> ${syncStatus}`;
+}
+
+function toggleThreadFocus(ppId) {
+  focusedThread = focusedThread === ppId ? null : ppId;
+  renderBrainstorm();
+}
+
+function renderBrainstorm() {
+  renderBrainstormToolbar();
+  const cols = [
+    {key:'painpoints',title:'Pain Points',sub:'What sucks?',addPlaceholder:'New pain point...'},
+    {key:'hmw',title:'How Might We',sub:'Reframe as opportunity',addPlaceholder:'HMW...'},
+    {key:'ideas',title:'Ideas',sub:'Concrete solutions',addPlaceholder:'New idea...'},
+    {key:'parked',title:'Parked',sub:'Not this hackathon',addPlaceholder:''},
+  ];
+  document.getElementById('kanbanBoard').innerHTML = cols.map(col => {
+    const items = BRAINSTORM[col.key] || [];
+    return `<div class="kanban-col">
+      <div class="kanban-col-header">${col.title} <span>${items.length}</span></div>
+      <div class="kanban-items">${items.map(item => {
+        const ppId = getPpForItem(col.key, item);
+        const color = ppId ? getThreadColor(ppId) : '#999';
+        const dimmed = focusedThread && ppId !== focusedThread;
+        const linked = col.key === 'hmw' ? ` &larr; ${BRAINSTORM.painpoints.find(p=>p.id===item.linked)?.title.substring(0,15)||'?'}` : col.key === 'ideas' && item.hmw ? ` &larr; ${BRAINSTORM.hmw.find(h=>h.id===item.hmw)?.title.substring(0,20)||'?'}` : '';
+        return `
+        <div class="kanban-card${dimmed?' thread-dim':''}" style="border-left-color:${color};--glow-color:${color};" data-thread="${ppId||''}"
+          onmouseenter="highlightThread('${ppId||''}')" onmouseleave="unhighlightThread()">
+          <h4>${item.title}</h4>
+          ${linked ? `<p style="font-size:10px;color:${color};margin-bottom:6px;font-weight:500;">${linked}</p>` : ''}
+          ${item.desc ? `<p>${item.desc}</p>` : ''}
+          ${col.key==='painpoints' && item.consumer ? `<div class="card-meta"><span class="meta-tag" style="border-color:${color};color:${color};">Target: ${item.consumer}</span></div>` : ''}
+          ${col.key==='painpoints' && item.market ? `<p style="margin-top:6px;font-size:11px;color:#333;background:var(--surface-alt);padding:6px 8px;border-left:3px solid ${color};"><strong>Market:</strong> ${item.market}</p>` : ''}
+          ${item.who && col.key!=='painpoints' ? `<p style="margin-top:6px;font-size:10px;color:var(--accent);">Who: ${item.who}</p>` : ''}
+          ${item.impact ? `<span class="tag tag-${item.impact==='high'?'high':item.impact==='med'?'med':'skip'}" style="margin-top:6px;">${item.impact} impact</span>` : ''}
+          <div class="card-actions">
+            ${col.key==='ideas' ? `<button style="background:var(--accent-2);color:#fff;border-color:var(--accent-2);" onclick="askClaude('makeBrick','${item.id}')">Make Brick</button>` : ''}
+            ${col.key==='painpoints' ? `<button onclick="toggleThreadFocus('${item.id}')" style="border-color:${color};color:${color};">Focus</button>` : ''}
+            <button onclick="removeBrainstorm('${col.key}','${item.id}')">x</button>
+          </div>
+        </div>`;
+      }).join('')}</div>
+      ${col.addPlaceholder ? `<div class="kanban-add"><input placeholder="${col.addPlaceholder}" onkeydown="if(event.key==='Enter')addBrainstorm('${col.key}',this)"></div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function highlightThread(ppId) {
+  if (!ppId || focusedThread) return;
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    if (card.dataset.thread === ppId) card.classList.add('thread-glow');
+    else card.classList.add('thread-dim');
+  });
+}
+function unhighlightThread() {
+  if (focusedThread) return;
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    card.classList.remove('thread-glow','thread-dim');
+  });
+}
+
+function addBrainstorm(col, input) {
+  const title = input.value.trim();
+  if (!title) return;
+  const id = col + '_' + Date.now();
+  const item = {id, title, desc: '', who: ''};
+  if (col === 'ideas') item.impact = 'med';
+  if (col === 'hmw' && focusedThread) item.linked = focusedThread;
+  if (col === 'ideas' && focusedThread) {
+    const hmw = BRAINSTORM.hmw.find(h => h.linked === focusedThread);
+    if (hmw) item.hmw = hmw.id;
+  }
+  BRAINSTORM[col].push(item);
+  input.value = '';
+  saveState(); pushBrainstorm(); renderBrainstorm();
+}
+
+function removeBrainstorm(col, id) {
+  BRAINSTORM[col] = BRAINSTORM[col].filter(x => x.id !== id);
+  saveState(); pushBrainstorm(); renderBrainstorm();
+}
+
+// API SYNC for brainstorm (shared with teammates)
+const API_BASE = window.location.origin;
+
+async function checkApi() {
+  try {
+    const res = await fetch(API_BASE + '/api/brain', {method:'GET'});
+    if (res.ok) { apiAvailable = true; return true; }
+  } catch(e) {}
+  apiAvailable = false;
+  return false;
+}
+
+async function pullBrainstorm() {
+  if (!await checkApi()) return;
+  try {
+    const res = await fetch(API_BASE + '/api/brain');
+    if (res.ok) {
+      const data = await res.json();
+      BRAINSTORM = data;
+      saveState(); renderBrainstorm();
+      showToast('Brainstorm synced from server');
+    }
+  } catch(e) { console.log('Pull failed:', e); }
+}
+
+async function pushBrainstorm() {
+  if (!apiAvailable) return;
+  try {
+    await fetch(API_BASE + '/api/brain', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(BRAINSTORM)
+    });
+  } catch(e) { console.log('Push failed:', e); }
+}
+
+async function syncBrainstorm() {
+  if (await checkApi()) {
+    await pullBrainstorm();
+    showToast('Synced!');
+  } else {
+    showToast('No API — running locally');
+  }
+  renderBrainstormToolbar();
+}
+
+// P4: BRICKS
+let brickFilter = 'all';
+
+function renderBricks() {
+  const selected = BRICKS.filter(b=>b.selected);
+  const coveredPrizes = new Set(selected.flatMap(b=>b.prizes));
+  // Coverage
+  document.getElementById('coverageSticky').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div><div class="coverage-count">${coveredPrizes.size} / ${ALL_PRIZES.length}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);">Prize Coverage</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="selectPreset()">Load Recommended</button>
+        <button class="btn btn-secondary" onclick="clearBricks()">Clear All</button>
+      </div>
+    </div>
+    <div class="coverage-tags" style="margin-top:10px;">${ALL_PRIZES.map(p=>`<span class="cov-tag${coveredPrizes.has(p)?' covered':''}">${p}</span>`).join('')}</div>
+  `;
+  // Toolbar
+  const cats = ['all',...new Set(BRICKS.map(b=>b.category))];
+  document.getElementById('brickToolbar').innerHTML = cats.map(c =>
+    `<button class="${brickFilter===c?'active':''}" onclick="brickFilter='${c}';renderBricks();">${c}</button>`
+  ).join('') + `<button onclick="askClaude('newBrick')" class="btn-claude" style="background:var(--accent-2);color:#fff;border-color:var(--accent-2);margin-left:auto;">Ask Claude: New Brick</button>`;
+  // Grid
+  const filtered = brickFilter==='all' ? BRICKS : BRICKS.filter(b=>b.category===brickFilter);
+  document.getElementById('brickGrid').innerHTML = filtered.map(b => `
+    <div class="brick${b.selected?' selected':''}" onclick="toggleBrick('${b.id}')">
+      <div class="brick-cat">${b.category}</div>
+      <div class="brick-top">
+        <div class="brick-emoji">${b.emoji}</div>
+        <div class="brick-info"><div class="brick-name">${b.name}</div><div class="brick-desc">${b.desc}</div></div>
+      </div>
+      <div class="brick-meta">
+        ${b.prizes.map(p=>`<span class="tag tag-prize">${p}</span>`).join('')}
+        <span class="tag tag-${b.difficulty}">${b.difficulty}</span>
+        <span class="tag">${b.timeHours}h</span>
+      </div>
+      <div class="brick-actions">
+        <button class="btn-info" onclick="event.stopPropagation();openDetail('${b.id}')">INFO</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleBrick(id) { const b = BRICKS.find(x=>x.id===id); if(b){b.selected=!b.selected; saveState(); renderBricks(); renderMVP(); renderSidebar();} }
+function selectPreset() { const rec=['reasoning','voice','ui','triage','explainer','vaccine','workflow','export']; BRICKS.forEach(b=>b.selected=rec.includes(b.id)); saveState(); renderBricks(); renderMVP(); renderSidebar(); }
+function clearBricks() { BRICKS.forEach(b=>b.selected=false); saveState(); renderBricks(); renderMVP(); renderSidebar(); }
+
+function openDetail(id) {
+  const b = BRICKS.find(x=>x.id===id); if(!b) return;
+  const df = {easy:1,medium:2,hard:3}[b.difficulty]||2;
+  document.getElementById('detailBody').innerHTML = `
+    <h3>${b.emoji} ${b.name}</h3>
+    <p style="font-size:12px;margin-bottom:18px;">${b.desc}</p>
+    <div class="detail-section"><h4>Difficulty</h4><div class="diff-bar ${b.difficulty}">${[1,2,3].map(i=>`<span${i<=df?' class="on"':''}></span>`).join('')}</div><p style="margin-top:4px;font-size:11px;">${b.difficulty.toUpperCase()} — ~${b.timeHours}h</p></div>
+    <div class="detail-section"><h4>First Step</h4><p>${b.firstStep||'<em>Not defined yet. Ask Claude to generate.</em>'}</p></div>
+    <div class="detail-section"><h4>Definition of Done</h4><p>${b.dod||'<em>Not defined yet.</em>'}</p></div>
+    <div class="detail-section"><h4>Hardest Part</h4><p>${b.hardest||'<em>Not defined yet.</em>'}</p></div>
+    <div class="detail-section"><h4>Tech Stack</h4><p>${b.tech.recommended}</p><h4 style="margin-top:8px;">Trending / Emerging</h4><p>${b.tech.trending}</p><h4 style="margin-top:8px;">Prize Pool Alternatives</h4><p>${b.tech.prizeAlt}</p></div>
+    <div class="detail-section"><h4>Dependencies</h4>${b.deps.length>0?`<ul>${b.deps.map(d=>{const dep=BRICKS.find(x=>x.id===d);return`<li>${dep?dep.emoji+' '+dep.name:d} ${dep?.selected?'<span class="tag tag-easy">Selected</span>':'<span class="tag tag-hard">Not Selected</span>'}</li>`;}).join('')}</ul>`:'<p>None</p>'}</div>
+    <div class="detail-section"><h4>Team Assignment</h4><ul>
+      ${b.teamAssign.austin?`<li><strong style="color:var(--accent-2);">Austin:</strong> ${b.teamAssign.austin}</li>`:''}
+      ${b.teamAssign.cs?`<li><strong style="color:var(--easy);">CS Expert:</strong> ${b.teamAssign.cs}</li>`:''}
+      ${b.teamAssign.medical?`<li><strong style="color:var(--accent);">Medical TM:</strong> ${b.teamAssign.medical}</li>`:''}
+      ${b.teamAssign.consultant?`<li><strong style="color:var(--medium);">Consultant TM:</strong> ${b.teamAssign.consultant}</li>`:''}
+    </ul></div>
+    <div class="detail-section"><h4>Prize Coverage</h4><div style="display:flex;flex-wrap:wrap;gap:4px;">${b.prizes.map(p=>`<span class="tag tag-prize">${p}</span>`).join('')}</div>
+      ${b.prizes.filter(p=>CRITERIA[p]).map(p=>`<p style="margin-top:6px;font-size:10px;"><strong>${p}:</strong> ${CRITERIA[p]}</p>`).join('')}
+    </div>
+    <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn ${b.selected?'btn-secondary':'btn-primary'}" onclick="toggleBrick('${b.id}');openDetail('${b.id}');">${b.selected?'Deselect':'Select'}</button>
+      <button class="btn btn-claude" onclick="askClaude('brickDetail','${b.id}')">Ask Claude: Generate Specs</button>
+    </div>
+  `;
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('overlayBg').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('overlayBg').classList.remove('open');
+}
+
+// P5: MVP
+function renderMVP() {
+  const sel = BRICKS.filter(b=>b.selected);
+  const cov = new Set(sel.flatMap(b=>b.prizes));
+  const totalH = sel.reduce((s,b)=>s+b.timeHours,0);
+  if (sel.length === 0) {
+    document.getElementById('mvpContent').innerHTML = '<p style="color:var(--text-dim);">No bricks selected. Go to Lego Bricks tab to select features.</p>';
+    return;
+  }
+  // Warnings
+  const warnings = [];
+  sel.forEach(b => b.deps.forEach(d => {
+    if (!BRICKS.find(x=>x.id===d&&x.selected)) {
+      const dep = BRICKS.find(x=>x.id===d);
+      warnings.push(`"${b.name}" requires "${dep?.name||d}" — not selected!`);
+    }
+  }));
+  if (totalH > 20) warnings.push(`Total estimated: ${totalH}h — exceeds 20h safe window. Cut scope.`);
+
+  // User stories
+  const stories = sel.map(b => {
+    const storyMap = {
+      reasoning: 'As a <strong>clinician</strong>, I want the system to <strong>reason through symptoms using multiple AI models</strong> so that <strong>diagnostic suggestions are accurate and well-reasoned</strong>.',
+      voice: 'As a <strong>non-English-speaking patient</strong>, I want to <strong>speak in my native language</strong> so that <strong>I can accurately describe my symptoms without a translator</strong>.',
+      ui: 'As a <strong>patient in the ER</strong>, I want a <strong>simple tablet interface</strong> so that <strong>I can complete intake without help</strong>.',
+      triage: 'As a <strong>patient</strong>, I want to <strong>answer guided symptom questions with visual aids</strong> so that <strong>I can communicate clearly what I\'m feeling</strong>.',
+      explainer: 'As a <strong>patient leaving the ER</strong>, I want to <strong>understand my diagnosis in plain language</strong> so that <strong>I know what to do next</strong>.',
+      vaccine: 'As a <strong>patient</strong>, I want to <strong>see which vaccines I\'m overdue for</strong> so that <strong>I can stay up-to-date and travel safely</strong>.',
+      workflow: 'As a <strong>hospital admin</strong>, I want the <strong>intake process to run autonomously</strong> so that <strong>nurses and doctors spend less time on paperwork</strong>.',
+      export: 'As a <strong>doctor</strong>, I want a <strong>1-page patient summary</strong> so that <strong>I can review it before entering the room</strong>.',
+      vet: 'As a <strong>pet owner</strong>, I want to <strong>describe my pet\'s symptoms to an AI</strong> so that <strong>the vet gets useful info before examining</strong>.',
+      drugs: 'As a <strong>patient on multiple medications</strong>, I want to <strong>check drug interactions</strong> so that <strong>I avoid dangerous combinations</strong>.',
+      scribe: 'As a <strong>doctor</strong>, I want my <strong>patient conversations auto-transcribed into SOAP notes</strong> so that <strong>I can focus on the patient</strong>.',
+      dashboard: 'As a <strong>patient</strong>, I want to <strong>see my health journey visualized</strong> so that <strong>I understand my progress</strong>.',
+      insurance: 'As a <strong>patient</strong>, I want to <strong>know my insurance coverage before treatment</strong> so that <strong>I can make informed decisions</strong>.',
+      auth: 'As a <strong>patient</strong>, I want my <strong>health data secured with proper authentication</strong> so that <strong>only I and my doctors can access it</strong>.',
+      knowledgegraph: 'As a <strong>patient</strong>, I want my <strong>full health profile remembered</strong> so that <strong>I don\'t repeat information at every visit</strong>.',
+      study: 'As a <strong>patient</strong>, I want to <strong>learn about my conditions through adaptive quizzes</strong> so that <strong>I can manage my health better</strong>.',
+    };
+    return {brick:b, story: storyMap[b.id] || `As a user, I want ${b.name} so that I benefit.`};
+  });
+
+  // Timeline
+  const phases = [
+    {label:'HOUR 0-1',title:'Setup',desc:'Repo, API keys, project scaffold',bricks:[]},
+    {label:'HOUR 1-8',title:'Core Build',desc:'Must-have features',bricks:sel.filter(b=>b.category==='core'||b.id==='triage')},
+    {label:'HOUR 8-14',title:'Expand',desc:'Additional prize tracks',bricks:sel.filter(b=>['explainer','vaccine','workflow','scribe','drugs'].includes(b.id))},
+    {label:'HOUR 14-20',title:'Polish',desc:'Bonus features + UI polish',bricks:sel.filter(b=>['insurance','dashboard','vet','knowledgegraph','auth','export','study'].includes(b.id))},
+    {label:'HOUR 20-24',title:'Demo + Submit',desc:'Record video by 10:30am! Devpost submission.',bricks:[]},
+  ];
+
+  document.getElementById('mvpContent').innerHTML = `
+    ${warnings.map(w=>`<div class="warning-box">${w}</div>`).join('')}
+    <div class="section-title">Selected Modules (${sel.length} bricks, ~${totalH}h)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;">${sel.map(b=>`<div style="padding:6px 12px;border:2px solid var(--text);background:var(--surface);font-size:11px;">${b.emoji} ${b.name}</div>`).join('')}</div>
+
+    <div class="section-title">User Stories</div>
+    ${stories.map(s=>`<div class="user-story">${s.story}</div>`).join('')}
+    <div style="display:flex;gap:8px;margin:12px 0 24px;flex-wrap:wrap;">
+      <button class="btn btn-claude" onclick="askClaude('userStories')">Ask Claude: Improve User Stories</button>
+      <button class="btn" style="background:var(--accent);color:#fff;border-color:var(--accent);" onclick="askClaude('guru')">Ask Hackathon Guru: Full Strategy Review</button>
+    </div>
+
+    <div class="section-title">UX Integration Flow</div>
+    <div class="card" style="padding:16px;margin-bottom:12px;font-size:12px;line-height:2;">
+      Patient arrives &rarr; <strong>Opens tablet</strong> &rarr; Selects language &rarr; <strong>AI Triage Intake</strong> (pain scale, body map, follow-ups) &rarr; Triage summary generated &rarr; <strong>Doctor reviews 1-page PDF</strong> &rarr; Consultation happens &rarr; <strong>Diagnosis Explainer</strong> (plain language) &rarr; <strong>Vaccine Check</strong> &rarr; Patient leaves informed
+    </div>
+    <button class="btn btn-claude" style="margin-bottom:24px;" onclick="askClaude('uxReview')">Ask Claude: UX Integration Review</button>
+
+    <div class="section-title">Team Legend</div>
+    <div class="team-legend">
+      <div class="team-legend-item"><div class="team-color" style="background:var(--accent-2);"></div>Austin (Frontend + Agent)</div>
+      <div class="team-legend-item"><div class="team-color" style="background:var(--easy);"></div>CS Expert (Backend + API)</div>
+      <div class="team-legend-item"><div class="team-color" style="background:var(--accent);"></div>Medical TM (Validation)</div>
+      <div class="team-legend-item"><div class="team-color" style="background:var(--medium);"></div>Consultant TM (Pitch)</div>
+    </div>
+
+    <div class="section-title">24-Hour Timeline</div>
+    <div class="timeline">${phases.map((p,i)=>`
+      <div class="tl-item${i<3?' active':''}">
+        <div class="tl-time">${p.label}</div>
+        <h4>${p.title}</h4>
+        <p style="font-size:11px;color:var(--text-dim);">${p.desc}</p>
+        ${p.bricks.length?`<div class="tl-bricks">${p.bricks.map(b=>`<span class="tl-brick">${b.emoji} ${b.name}</span>`).join('')}</div>`:''}
+      </div>
+    `).join('')}</div>
+
+    <div class="section-title">Prize Coverage</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${ALL_PRIZES.map(p=>`<span class="tag ${cov.has(p)?'tag-prize':''}" style="${cov.has(p)?'':'opacity:.3;'}">${p}</span>`).join('')}</div>
+    <p style="font-size:12px;color:var(--text-dim);">Covering ${cov.size}/${ALL_PRIZES.length} prize tracks with ${sel.length} bricks (~${totalH}h build).</p>
+
+    <div class="section-title">12 Winning Dimensions Self-Check</div>
+    <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">From analysis of 25+ winning projects at TreeHacks, HackHarvard, PennApps, MIT Reality Hack. Score 80+ to be competitive, 90+ to win.</p>
+    <div style="text-align:center;padding:20px;border:3px solid var(--text);background:var(--surface);margin-bottom:16px;box-shadow:var(--shadow);">
+      <div id="rubricScore" style="font-size:64px;font-weight:700;color:var(--accent);line-height:1;">0</div>
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);margin-top:4px;">WINNING READINESS</div>
+      <div id="rubricVerdict" style="font-size:13px;font-weight:700;margin-top:8px;letter-spacing:1px;"></div>
+    </div>
+    ${renderRubricItems()}
+
+    <div class="section-title" style="margin-top:32px;">Winning Patterns to Steal</div>
+    <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">Real hackathon winners that share our approach. Learn from them.</p>
+    <div class="grid-2">
+      <div class="card" style="border-left:5px solid var(--accent);">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:4px;">TREEHACKS 2026 // GRAND PRIZE $12K</div>
+        <h4 style="font-size:14px;margin-bottom:6px;">Shepherd (Smart Cane)</h4>
+        <p style="font-size:11px;color:var(--text-dim);">Motorized smart cane for visually impaired. <strong>Why it won:</strong> Blindfolded demo through obstacle course. The demo WAS the pitch. Physical, visceral, undeniable.</p>
+        <p style="font-size:10px;margin-top:6px;color:var(--accent-2);"><strong>Steal:</strong> Our multilingual voice demo is our "blindfold moment." Show a Chinese-speaking patient completing triage live.</p>
+      </div>
+      <div class="card" style="border-left:5px solid var(--accent);">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:4px;">HACKHARVARD 2025 // HUMAN AUGMENTATION</div>
+        <h4 style="font-size:14px;margin-bottom:6px;">Halo (AR Medical Emergency Guide)</h4>
+        <p style="font-size:11px;color:var(--text-dim);">AR app for medical emergencies. <strong>Why it won:</strong> Founders' mother nearly died from DKA. Pitch opened with that story. Every judge remembered it.</p>
+        <p style="font-size:10px;margin-top:6px;color:var(--accent-2);"><strong>Steal:</strong> Open with "Every ER visit starts with 15 minutes of miscommunication." Personal, visceral, stat-backed.</p>
+      </div>
+      <div class="card" style="border-left:5px solid var(--medium);">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--medium);margin-bottom:4px;">MIT HACKING MEDICINE // INTERSYSTEMS PRIZE</div>
+        <h4 style="font-size:14px;margin-bottom:6px;">HospiTwin (ER Digital Twin)</h4>
+        <p style="font-size:11px;color:var(--text-dim);">Digital twin for ER bottlenecks. <strong>Why it won:</strong> Applied proven manufacturing concept to healthcare. Repurposing known patterns in new domains = "innovative."</p>
+        <p style="font-size:10px;margin-top:6px;color:var(--accent-2);"><strong>Steal:</strong> Our knowledge graph pattern (Artopath) applied to health records. Same principle: proven pattern, new domain.</p>
+      </div>
+      <div class="card" style="border-left:5px solid var(--medium);">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--medium);margin-bottom:4px;">MICROSOFT AI AGENTS // BEST OVERALL $20K</div>
+        <h4 style="font-size:14px;margin-bottom:6px;">RiskWise (Supply Chain Agents)</h4>
+        <p style="font-size:11px;color:var(--text-dim);">Python + React + Azure AI. No custom models. <strong>Why it won:</strong> Smart orchestration of existing services. The tech is mainstream, the architecture is clever. That's the sweet spot.</p>
+        <p style="font-size:10px;margin-top:6px;color:var(--accent-2);"><strong>Steal:</strong> Gemini + K2 Think + ElevenLabs. No custom training. Smart orchestration. Same winning formula.</p>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:32px;">Serial Winner Insights</div>
+    <div class="grid-2" style="margin-bottom:24px;">
+      <div class="card" style="padding:14px;">
+        <h4 style="font-size:12px;color:var(--accent);">Sze Yu Sim (Serial Winner)</h4>
+        <p style="font-size:12px;">"I spend <strong>30% of hackathon time on the pitch.</strong>" Most teams spend 95% coding and 5% pitching. Winners flip this.</p>
+      </div>
+      <div class="card" style="padding:14px;">
+        <h4 style="font-size:12px;color:var(--accent);">Allan Kong (Won $$ thousands)</h4>
+        <p style="font-size:12px;">"<strong>Always have a communication expert on the team.</strong>" Technical depth means nothing if you can't convey it in 3 minutes.</p>
+      </div>
+      <div class="card" style="padding:14px;">
+        <h4 style="font-size:12px;color:var(--accent);">Oleksandr (47% Win Rate)</h4>
+        <p style="font-size:12px;">"<strong>I cut 60% of planned features by hour 6.</strong>" Tight scope, working demo, rehearsed pitch. Every time.</p>
+      </div>
+      <div class="card" style="padding:14px;">
+        <h4 style="font-size:12px;color:var(--accent);">Devpost Data</h4>
+        <p style="font-size:12px;">"<strong>Projects without videos are 3x less likely to win.</strong>" Plan the video BEFORE you start coding.</p>
+      </div>
+    </div>
+  `;
+}
+
+// RUBRIC (12 Winning Dimensions from playbook)
+const RUBRIC = [
+  {id:'d1',dim:'D1: Problem Story',desc:'Visceral "why" — personal story, real stat, live pain point. NOT "we built X."',pts:15,tier:'A',autoCheck:b=>b.some(x=>['triage','voice'].includes(x.id))},
+  {id:'d2',dim:'D2: Demo "Wow" Moment',desc:'2-3 features that WORK flawlessly. One interaction that makes judges lean forward.',pts:15,tier:'A',autoCheck:b=>b.some(x=>x.id==='voice')&&b.some(x=>x.id==='triage')},
+  {id:'d3',dim:'D3: Pitch Under 3min',desc:'Problem > Solution > Demo > Impact > Tech. Rehearsed 3+ times. 30% of time on pitch.',pts:15,tier:'A',autoCheck:()=>false},
+  {id:'d4',dim:'D4: Sponsor API Integration',desc:'Deeply integrated 2+ sponsor APIs. Not bolted on — core to the product.',pts:10,tier:'B',autoCheck:b=>b.filter(x=>x.prizes.some(p=>p.includes('Gemini')||p.includes('K2')||p.includes('ElevenLabs')||p.includes('Hex'))).length>=2},
+  {id:'d5',dim:'D5: Right-Sized Tech',desc:'Smart orchestration of existing tools. No custom model training in 24h.',pts:10,tier:'B',autoCheck:b=>b.some(x=>x.id==='reasoning')},
+  {id:'d6',dim:'D6: UI/UX Polish',desc:'Looks like a real product. Clean hierarchy, micro-animations, tablet-optimized.',pts:10,tier:'B',autoCheck:b=>b.some(x=>x.id==='ui')},
+  {id:'d7',dim:'D7: Novelty / Creativity',desc:'Fresh angle OR unexpected tech combination. Not another chatbot.',pts:10,tier:'B',autoCheck:b=>b.some(x=>x.id==='voice')&&b.some(x=>x.id==='triage')},
+  {id:'d8',dim:'D8: Business Viability',desc:'One slide: market size, user persona, next steps. Shows you thought beyond hackathon.',pts:5,tier:'C',autoCheck:()=>false},
+  {id:'d9',dim:'D9: Team Composition',desc:'3-4 people, complementary skills, one strong presenter.',pts:5,tier:'C',autoCheck:()=>true},
+  {id:'d10',dim:'D10: Scope Discipline',desc:'2-3 core features, all working. Cut 60% of planned features by hour 6.',pts:5,tier:'C',autoCheck:b=>b.length<=8},
+  {id:'d11',dim:'D11: Learning Narrative',desc:'"We learned X for the first time today." Humanizes the pitch.',pts:5,tier:'C',autoCheck:()=>false},
+  {id:'d12',dim:'D12: Video + Devpost Quality',desc:'2-min video planned BEFORE coding. 2 takes. All Devpost fields filled.',pts:5,tier:'C',autoCheck:()=>false},
+];
+
+let rubricState = {};
+function loadRubricState() { try { rubricState = JSON.parse(localStorage.getItem('yhack-rubric-v2')||'{}'); } catch(e) { rubricState = {}; } }
+function saveRubricState() { localStorage.setItem('yhack-rubric-v2', JSON.stringify(rubricState)); }
+loadRubricState();
+
+function toggleRubricItem(id) {
+  rubricState[id] = !rubricState[id];
+  saveRubricState();
+  updateRubricScore();
+}
+
+function updateRubricScore() {
+  let total = 0, max = 0;
+  RUBRIC.forEach(r => { max += r.pts; if (rubricState[r.id]) total += r.pts; });
+  const scoreEl = document.getElementById('rubricScore');
+  const verdictEl = document.getElementById('rubricVerdict');
+  if (!scoreEl) return;
+  scoreEl.textContent = total;
+  if (total < 50) { verdictEl.textContent = 'NEEDS WORK — Focus on Tier A first'; verdictEl.style.color = 'var(--accent)'; scoreEl.style.color = 'var(--accent)'; }
+  else if (total < 80) { verdictEl.textContent = 'COMPETITIVE — Solid, polish the details'; verdictEl.style.color = 'var(--medium)'; scoreEl.style.color = 'var(--medium)'; }
+  else if (total < 100) { verdictEl.textContent = 'STRONG CONTENDER — Top-10, push for top-3'; verdictEl.style.color = 'var(--easy)'; scoreEl.style.color = 'var(--easy)'; }
+  else { verdictEl.textContent = 'WINNER MATERIAL — Ship it and own the stage'; verdictEl.style.color = 'var(--easy)'; scoreEl.style.color = 'var(--easy)'; }
+}
+
+function renderRubricItems() {
+  const sel = BRICKS.filter(b=>b.selected);
+  const tiers = {A:'TIER A — Make-or-Break (15pts each)',B:'TIER B — Competitive Edge (10pts each)',C:'TIER C — Tiebreakers (5pts each)'};
+  let html = '';
+  let lastTier = '';
+  RUBRIC.forEach(r => {
+    if (r.tier !== lastTier) {
+      lastTier = r.tier;
+      const tierColors = {A:'var(--accent)',B:'var(--medium)',C:'var(--accent-2)'};
+      html += `<div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 0 4px;color:${tierColors[r.tier]};border-bottom:2px solid ${tierColors[r.tier]};margin:12px 0 6px;">${tiers[r.tier]}</div>`;
+    }
+    const checked = rubricState[r.id];
+    const auto = r.autoCheck(sel);
+    html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:2px solid var(--text);border-left:4px solid ${checked?'var(--easy)':'#ccc'};margin-bottom:4px;cursor:pointer;transition:all .1s;" onclick="toggleRubricItem('${r.id}');renderMVP();">
+      <div style="width:24px;height:24px;border:2px solid ${checked?'var(--easy)':'#ccc'};display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--easy);flex-shrink:0;">${checked?'&#10003;':''}</div>
+      <div style="flex:1;"><strong style="font-size:12px;">${r.dim}</strong><br><span style="font-size:11px;color:var(--text-dim);">${r.desc}</span></div>
+      <div style="font-size:20px;font-weight:700;color:${checked?'var(--easy)':'#ccc'};min-width:30px;text-align:right;">${r.pts}</div>
+      ${auto&&!checked?'<div style="font-size:9px;color:var(--medium);text-transform:uppercase;letter-spacing:1px;">AUTO?</div>':''}
+    </div>`;
+  });
+  // Delayed score update
+  setTimeout(updateRubricScore, 50);
+  return html;
+}
+
+// P6: SUBMISSION
+function renderSubmission() {
+  document.getElementById('submitContent').innerHTML = `
+    <div class="section-title">Demo Narrative Flow</div>
+    ${NARRATIVE.map(s=>`<div class="narr-step"><div class="narr-num">${s.num}</div><div class="narr-content"><h4>${s.title}</h4><p>${s.desc}</p></div></div>`).join('')}
+    <button class="btn btn-claude" style="margin:12px 0 24px;" onclick="askClaude('pitchScript')">Ask Claude: Write Pitch Script</button>
+
+    <div class="section-title">Judge Talking Points</div>
+    ${JUDGE_POINTS.map(j=>`<div class="judge-card"><h4>${j.track}</h4><p>${j.points}</p></div>`).join('')}
+
+    <div class="section-title">Video Tips</div>
+    <div class="tip-grid">
+      <div class="tip-card"><div class="icon">&#127916;</div><h4>Under 3 minutes</h4><p>Lead with the problem, not the tech.</p></div>
+      <div class="tip-card"><div class="icon">&#127908;</div><h4>Live demo > slides</h4><p>Show it working. Judges want to see it run.</p></div>
+      <div class="tip-card"><div class="icon">&#129657;</div><h4>Let the doctor speak</h4><p>30s of clinical validation > 5min tech explanation.</p></div>
+      <div class="tip-card"><div class="icon">&#127758;</div><h4>Demo multilingual</h4><p>Show language switching. This is a wow moment.</p></div>
+      <div class="tip-card"><div class="icon">&#128241;</div><h4>Show tablet UX</h4><p>ER intake happens on tablets. Record that view.</p></div>
+      <div class="tip-card"><div class="icon">&#127942;</div><h4>Name-drop sponsors</h4><p>"Powered by Gemini, K2 Think, ElevenLabs."</p></div>
+    </div>
+  `;
+}
+
+// ASK CLAUDE
+function askClaude(type, extra) {
+  let prompt = '';
+  const sel = BRICKS.filter(b=>b.selected);
+  const selNames = sel.map(b=>`${b.emoji} ${b.name}`).join(', ');
+
+  switch(type) {
+    case 'brainstorm':
+      const pps = BRAINSTORM.painpoints.map(p=>p.title).join(', ');
+      prompt = `We're building a healthcare + education AI agent for YHack 2026. Our current pain points: ${pps}. Suggest 3 more pain points we might be missing. Format: title + 1-line description + who has this problem. Then update the war room HTML file with the new pain points.`;
+      break;
+    case 'ideas':
+      const hmws = BRAINSTORM.hmw.map(h=>h.title).join('; ');
+      prompt = `Our HMW questions: ${hmws}. Generate 3 concrete hackathon project ideas. Format: title, 1-line concept, which HMW it addresses, impact (high/med/low). Then update the war room HTML file.`;
+      break;
+    case 'makeBrick':
+      const idea = BRAINSTORM.ideas.find(i=>i.id===extra);
+      prompt = `Convert this idea into a Lego Brick and add it to the war room HTML file:\nIdea: "${idea?.title}" — ${idea?.desc}\nGenerate: name, emoji, description, category, tech stack (recommended + trending + prize alternatives), difficulty, time estimate, first step, definition of done, hardest part, dependencies, prize coverage, team assignments (Austin=frontend+agent, CS Expert=backend, Medical TM=validation, Consultant=pitch).`;
+      break;
+    case 'newBrick':
+      prompt = `Add a new Lego Brick to the YHack war room HTML file. I'll describe the feature, you generate all attributes: name, emoji, description, category, tech stack, difficulty, time, first step, definition of done, hardest part, dependencies, prizes, team assignments. The feature is: [DESCRIBE YOUR FEATURE HERE]`;
+      break;
+    case 'brickDetail':
+      const brick = BRICKS.find(b=>b.id===extra);
+      prompt = `Generate/improve detailed specs for this Lego Brick in the war room HTML and update the file:\nBrick: ${brick?.emoji} ${brick?.name} — ${brick?.desc}\nFill in or improve: firstStep, dod (definition of done), hardest part, tech stack recommendations.`;
+      break;
+    case 'userStories':
+      prompt = `Our selected bricks: ${selNames}. Write cohesive user stories that connect them into a single product narrative. Use format: "As a [role], I want [action] so that [outcome]." Make them feel like one product, not separate features. Then update the war room HTML.`;
+      break;
+    case 'uxReview':
+      prompt = `As a UX expert, review these selected modules and recommend how to make them feel like one seamless product:\n${selNames}\nIdentify: screen flow, transitions, data handoffs between modules, potential UX friction points, and 3 specific integration recommendations.`;
+      break;
+    case 'pitchScript':
+      prompt = `Write a 2-minute pitch script for our YHack project. Selected features: ${selNames}. Team: Austin (AI systems engineer), CS Expert, Medical TM (7-year MD), Consultant. The product bridges the patient-clinician communication gap with multilingual AI triage. Include the demo flow.`;
+      break;
+    case 'guru':
+      const rubricChecked = RUBRIC.filter(r => rubricState[r.id]).map(r => r.dim).join(', ');
+      const rubricUnchecked = RUBRIC.filter(r => !rubricState[r.id]).map(r => `${r.dim} (${r.pts}pts)`).join(', ');
+      const score = RUBRIC.reduce((s,r) => s + (rubricState[r.id] ? r.pts : 0), 0);
+      prompt = `You are a hackathon guru — an AI entrepreneur with deep knowledge in workflow automation, healthcare, and winning hackathon strategies. You've studied 25+ winning projects from TreeHacks, HackHarvard, PennApps, MIT Reality Hack.
+
+CONTEXT: YHack 2026, March 28-29, Yale. 24-hour hackathon. $100K prize pool.
+
+OUR TEAM:
+- Austin: Full-stack AI/product (Python/React, LLM orchestration, agentic AI, built AIOS with 47 skills + Artopath cultural knowledge graph)
+- Medical TM: 7-year medical degree (clinical protocols, pharmacology, triage)
+- CS Expert: Yale CS junior, backend + frontend
+- Consultant: Strategy, pitch, business framing
+
+OUR SELECTED FEATURES: ${selNames}
+
+OUR RUBRIC SCORE: ${score}/100
+- CHECKED: ${rubricChecked || 'none'}
+- UNCHECKED (opportunities): ${rubricUnchecked || 'none'}
+
+OUR PAIN POINTS: ${BRAINSTORM.painpoints.map(p => p.title).join(', ')}
+OUR IDEAS: ${BRAINSTORM.ideas.map(i => i.title).join(', ')}
+
+WINNING PATTERNS WE'RE FOLLOWING:
+- Shepherd (TreeHacks Grand Prize): Physical demo moment. Our equivalent = live multilingual voice triage.
+- Halo (HackHarvard): Personal story opening. Our equivalent = "130M ER visits, 15 min wasted."
+- RiskWise (Microsoft $20K): Smart orchestration, no custom models. Our stack = Gemini + K2 Think + ElevenLabs.
+- HospiTwin (MIT Medicine): Proven pattern in new domain. Our equivalent = knowledge graph applied to health.
+- Minerva (TreeHacks): Double-dip sponsor tracks. We target 8+ tracks from 1 project.
+
+GIVE ME:
+1. Critical gaps: What are we missing that could cost us the win?
+2. "Wow moment" design: What should our single most impressive demo moment be?
+3. Scope advice: Which of our selected bricks should we CUT to ship a tighter product?
+4. Pitch opening: Write our first 30 seconds — the hook that makes judges lean in.
+5. Risk mitigation: What's most likely to go wrong in 24 hours and how do we prevent it?
+6. Sponsor strategy: For each sponsor we're targeting, what's the ONE thing their judges care about most?
+
+Be specific and actionable. This is for tomorrow.`;
+      break;
+  }
+
+  navigator.clipboard.writeText(prompt).then(() => showToast('Prompt copied! Paste to Claude.')).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea'); ta.value = prompt;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('Prompt copied! Paste to Claude.');
+  });
+}
+
+// ============ INIT ============
+function renderAll() {
+  renderSidebar(); renderRace(); renderAwards();
+  renderBrainstorm(); renderBricks(); renderMVP(); renderSubmission();
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeDetail(); });
+loadState();
+renderAll();
+navigate(currentPage);
+
+// Check API and pull brainstorm on startup
+checkApi().then(ok => {
+  if (ok) pullBrainstorm();
+  renderBrainstormToolbar();
+});
+</script>
+</body>
+</html>

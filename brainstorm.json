@@ -1,0 +1,25 @@
+{
+  "painpoints": [
+    {"id": "pp1", "title": "ER Communication Gap", "desc": "Patients say \"I feel dizzy\" but clinicians need standardized severity, onset, associated symptoms. 15 min wasted per visit.", "who": "Patients + ER nurses", "consumer": "ER patients (all ages), triage nurses, emergency physicians", "market": "130M US ER visits/year. $328B US emergency medicine market. Every hospital has this problem."},
+    {"id": "pp2", "title": "Scattered Health Records", "desc": "Vaccine records in 5 portals. No single source of truth. Switch doctors = start from scratch.", "who": "Everyone", "consumer": "Patients who switch providers, travelers, parents tracking kids' vaccines", "market": "330M Americans with fragmented records. $7.2B health information exchange market."},
+    {"id": "pp3", "title": "Language Barriers in Healthcare", "desc": "Non-English speakers can't describe symptoms accurately. Translators are scarce. Misdiagnosis risk.", "who": "Immigrant patients, international travelers", "consumer": "67M US residents who speak non-English at home, medical tourists, refugees", "market": "67M LEP (Limited English Proficiency) individuals in US. $3.1B medical interpretation market."},
+    {"id": "pp4", "title": "Doctors Re-Asking Questions", "desc": "Nurse asks intake questions, doctor asks the same ones. Patient repeats story 3 times.", "who": "Patients + Clinicians", "consumer": "All patients visiting any clinic or ER, front-desk staff, nurses, doctors", "market": "1B+ annual US outpatient visits. Each redundant intake = 10-15 min wasted clinician time."},
+    {"id": "pp5", "title": "Pet Owners Can't Describe Symptoms", "desc": "Even worse than humans. \"My dog is acting weird\" tells the vet nothing.", "who": "Pet owners", "consumer": "67% of US households (86.9M homes) own a pet. 200M+ vet visits/year.", "market": "$35.9B US veterinary services market. Pet owners spend avg $367/year on vet visits."},
+    {"id": "pp6", "title": "Health Literacy Gap", "desc": "Patients leave the doctor not understanding their diagnosis, medications, or next steps.", "who": "Patients with low health literacy", "consumer": "36% of US adults have basic/below-basic health literacy. Elderly, immigrants, low-income.", "market": "Low health literacy costs US $236B/year in avoidable ER visits and complications."}
+  ],
+  "hmw": [
+    {"id": "hmw1", "title": "HMW bridge the patient-clinician communication gap?", "linked": "pp1"},
+    {"id": "hmw2", "title": "HMW make health records portable and always up-to-date?", "linked": "pp2"},
+    {"id": "hmw3", "title": "HMW enable multilingual healthcare without human translators?", "linked": "pp3"},
+    {"id": "hmw4", "title": "HMW eliminate repeated intake questioning?", "linked": "pp4"},
+    {"id": "hmw5", "title": "HMW help patients understand their own health?", "linked": "pp6"}
+  ],
+  "ideas": [
+    {"id": "idea1", "title": "AI Triage Intake on Tablet", "desc": "Visual pain scales + body maps + AI follow-up questions. Generates triage summary for clinician.", "hmw": "hmw1", "impact": "high"},
+    {"id": "idea2", "title": "Multilingual Voice Health Assistant", "desc": "Speak in any language, AI translates to clinical terms and asks structured follow-ups.", "hmw": "hmw3", "impact": "high"},
+    {"id": "idea3", "title": "Personal Health Knowledge Graph", "desc": "Ingest all records, check vaccine status, drug interactions, travel recommendations.", "hmw": "hmw2", "impact": "high"},
+    {"id": "idea4", "title": "Diagnosis Explainer", "desc": "After visit: explain diagnosis in plain language adapted to patient literacy level.", "hmw": "hmw5", "impact": "med"},
+    {"id": "idea5", "title": "Vet Triage Mode", "desc": "Same triage pattern for pet hospitals. Species selector + common pet emergencies.", "hmw": "hmw1", "impact": "med"}
+  ],
+  "parked": []
+}
