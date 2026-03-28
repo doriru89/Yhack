@@ -46,7 +46,8 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:14
 /* MAIN */
 .main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;}
 .page{display:none;padding:32px 40px 80px;max-width:1100px;animation:fadeIn .3s ease;}
-#page-brainstorm,#page-mvp{max-width:none;}
+#page-brainstorm{max-width:none;}
+#page-mvp{max-width:1200px;}
 .page.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .page-title{font-size:28px;font-weight:700;text-transform:uppercase;letter-spacing:3px;border-bottom:5px solid var(--text);padding-bottom:12px;margin-bottom:24px;}
@@ -84,7 +85,7 @@ label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;m
 .warning-box::before{content:'!';font-weight:700;font-size:14px;background:var(--accent);color:#fff;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
 
 /* SCENARIO PICKER */
-.scenario-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px;}
+.scenario-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px;max-width:1100px;}
 .scenario-card{background:var(--surface);border:3px solid var(--text);padding:14px;cursor:pointer;transition:all .15s;position:relative;box-shadow:var(--shadow-sm);}
 .scenario-card:hover{box-shadow:var(--shadow);transform:translate(-1px,-1px);}
 .scenario-card.selected{border-color:var(--accent-2);background:#eef4ff;box-shadow:4px 4px 0 var(--accent-2);}
