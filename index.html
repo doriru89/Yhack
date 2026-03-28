@@ -190,16 +190,29 @@ label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;m
 .brick-toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
 .brick-toolbar button{font-family:var(--mono);font-size:10px;padding:6px 12px;border:2px solid var(--text);background:var(--surface);cursor:pointer;text-transform:uppercase;letter-spacing:1px;}
 .brick-toolbar button:hover,.brick-toolbar button.active{background:var(--text);color:var(--bg);}
-.brick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.brick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px;}
 .brick{background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);cursor:pointer;transition:all .15s;position:relative;user-select:none;}
 .brick.selected{background:var(--text);color:var(--bg);box-shadow:none;transform:translate(4px,4px);}
 .brick-cat{position:absolute;top:0;right:0;font-size:9px;text-transform:uppercase;letter-spacing:1px;padding:4px 10px;background:var(--text);color:var(--bg);}
 .brick.selected .brick-cat{background:var(--accent);}
-.brick-top{padding:14px 14px 8px;display:flex;gap:12px;align-items:flex-start;}
-.brick-emoji{font-size:26px;line-height:1;}
+.brick-top{padding:18px 18px 10px;display:flex;gap:12px;align-items:flex-start;}
+.brick-emoji{font-size:32px;line-height:1;}
 .brick-info{flex:1;}
-.brick-name{font-size:13px;font-weight:700;}
-.brick-desc{font-size:10px;color:var(--text-dim);margin-top:2px;}
+.brick-name{font-size:15px;font-weight:700;}
+.brick-desc{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.brick-first-step{padding:0 14px 10px;font-size:11px;line-height:1.5;color:var(--text-dim);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;border-top:1px solid var(--surface-alt);margin:0 14px;padding-top:8px;}
+.brick-first-step.expanded{-webkit-line-clamp:unset;}
+.brick.selected .brick-first-step{color:#aaa;border-color:#333;}
+.brick-deps{padding:4px 14px 8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.brick-dep-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;font-size:9px;border:1px solid #999;font-family:var(--mono);font-weight:500;}
+.brick-dep-chip .dep-dot{width:6px;height:6px;border-radius:50%;}
+.brick-dep-chip .dep-dot.ok{background:var(--easy);}
+.brick-dep-chip .dep-dot.missing{background:var(--accent);}
+.brick-team{padding:4px 14px 6px;display:flex;gap:6px;align-items:center;}
+.brick-team-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--text);font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;cursor:default;}
+.brick.selected .brick-team-dot{border-color:#555;color:var(--bg);}
+.brick-hardest{padding:2px 14px 10px;font-size:9px;font-style:italic;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.brick.selected .brick-hardest{color:#888;}
 .brick.selected .brick-desc{color:#999;}
 .brick-meta{padding:0 14px 10px;display:flex;flex-wrap:wrap;gap:4px;}
 .brick-actions{padding:8px 14px 12px;display:flex;gap:6px;}
@@ -266,7 +279,8 @@ label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;m
 .ux-step-emoji{font-size:28px;}
 .ux-step-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;line-height:1.3;}
 .ux-step-desc{font-size:9px;opacity:.7;line-height:1.4;}
-.ux-step-brick{font-size:8px;padding:2px 6px;border:1px solid currentColor;margin-top:auto;opacity:.8;text-transform:uppercase;letter-spacing:.5px;}
+.ux-step-brick{font-size:10px;font-weight:700;padding:4px 8px;border:1px solid currentColor;margin-top:auto;background:var(--surface-alt);text-transform:uppercase;letter-spacing:.5px;}
+.ux-step.active-step .ux-step-brick{background:rgba(255,255,255,.15);}
 .ux-arrow{display:flex;align-items:center;font-size:18px;font-weight:700;color:var(--accent);padding:0 3px;flex-shrink:0;}
 
 /* Stories + Prizes */
@@ -414,13 +428,21 @@ label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;m
   <!-- P6 ARCHITECTURE -->
   <div class="page" id="page-arch" data-title="Architecture">
     <h1 class="page-title">06 // Architecture</h1>
+
     <p class="page-desc">System architecture, data sources, brick composition, and task timeline. Live operating view for the hackathon.</p>
     <div id="archContent"></div>
   </div>
 
-  <!-- P7 SUBMISSION -->
+  <!-- P7 RISKS -->
+  <div class="page" id="page-risks" data-title="Risks">
+    <h1 class="page-title">07 // Risks</h1>
+    <p class="page-desc">Critical risk assessment. Check off as mitigated. Honest feedback and kill decisions below.</p>
+    <div id="risksContent"></div>
+  </div>
+
+  <!-- P8 SUBMISSION -->
   <div class="page" id="page-submit" data-title="Submission">
-    <h1 class="page-title">07 // Submission Guide</h1>
+    <h1 class="page-title">08 // Submission Guide</h1>
     <p class="page-desc">Video submission 11:00-11:30am Sunday. Judging 12:00-2:30pm Kline Tower 205. Devpost required.</p>
     <div id="submitContent"></div>
   </div>
@@ -438,7 +460,7 @@ label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;m
 <script>
 // ============ DATA ============
 
-const PAGES = ['race','awards','brainstorm','bricks','mvp','arch','submit'];
+const PAGES = ['race','awards','brainstorm','bricks','mvp','arch','risks','submit'];
 
 const SCHEDULE = {
   saturday: [
@@ -706,6 +728,107 @@ let DATA_SOURCES = [
   {id:'browser_network', name:'Insurer Directory (Playwright)', type:'Network verification', access:'Browser automation', status:'untested', brick:'network', url:'find-a-doctor pages', realData:true},
 ];
 
+let RISKS = [
+  {id:'r1', risk:'Insurer portal anti-automation (CAPTCHA/bot detection)', likelihood:'high', impact:'high', mitigation:'Pre-record fallback demo video. Test Anthem BCBS CT portal BEFORE coding starts.', owner:'Austin', status:'open'},
+  {id:'r2', risk:'OOP range too wide without real deductible data', likelihood:'high', impact:'high', mitigation:'Browser automation is P0, not stretch. If blocked, use smart defaults with honest uncertainty labels.', owner:'Austin', status:'open'},
+  {id:'r3', risk:'CMS PPL API key not approved in time', likelihood:'medium', impact:'high', mitigation:'Register at developer.cms.gov immediately. Fallback: hardcoded benchmark data for New Haven.', owner:'CS', status:'open'},
+  {id:'r4', risk:'Scope creep past 20h budget', likelihood:'medium', impact:'high', mitigation:'Cut comparison + dashboard bricks by H6 if behind. Core 8 bricks only.', owner:'All', status:'open'},
+  {id:'r5', risk:'Playwright breaks during live demo', likelihood:'medium', impact:'high', mitigation:'Record 30-second video of successful retrieval. Show recording if live fails. Seamless transition.', owner:'Austin', status:'open'},
+  {id:'r6', risk:'Network directory 55% inaccuracy (ghost networks)', likelihood:'high', impact:'medium', mitigation:'Provenance labels + "call to verify" disclaimer. Never claim certainty.', owner:'Medical', status:'open'},
+  {id:'r7', risk:'Demo machine WiFi failure at venue', likelihood:'low', impact:'high', mitigation:'Pre-cache all API responses after first fetch. Build offline fallback mode with local JSON.', owner:'CS', status:'open'},
+  {id:'r8', risk:'DoltHub lacks New Haven hospital data', likelihood:'medium', impact:'low', mitigation:'Fall back to FAIR Health benchmarks + label as "regional estimate, not facility-specific."', owner:'CS', status:'open'},
+  {id:'r9', risk:'Dental data gaps', likelihood:'medium', impact:'low', mitigation:'Pre-fetch FAIR Health dental for CT. Worst case: national averages with provenance tag.', owner:'Data', status:'open'},
+  {id:'r10', risk:'Demo takes too long (>3 min)', likelihood:'low', impact:'medium', mitigation:'Practice 3x. Have a 2-minute cut version ready. Script every click.', owner:'All', status:'open'},
+];
+
+const CRITICAL_FEEDBACK = [
+  {id:'cf1', question:'Can a judge understand the product in 60 seconds without explanation?', checked:false},
+  {id:'cf2', question:'Does removing ANY sponsor API break the product? (Must be yes for each)', checked:false},
+  {id:'cf3', question:'Have we rehearsed the full pitch 3+ times?', checked:false},
+  {id:'cf4', question:'Is OOP range narrow enough to be actionable (not $40-$200)?', checked:false},
+  {id:'cf5', question:'Would WE actually use this product to find care?', checked:false},
+  {id:'cf6', question:'Is browser automation working reliably on test portal?', checked:false},
+  {id:'cf7', question:'Does our "wow moment" work in under 30 seconds?', checked:false},
+  {id:'cf8', question:'Can we explain provenance (FACT/INFERRED/ASSUMED) without jargon?', checked:false},
+];
+
+const KILL_DECISIONS = [
+  {trigger:'Browser automation not working by H8', action:'Switch to manual deductible input with smart defaults + honest uncertainty labels'},
+  {trigger:'CMS PPL API key not approved by hackathon start', action:'Use hardcoded Medicare benchmark data for 5 categories in New Haven'},
+  {trigger:'Behind schedule at H12 (Phase 3 incomplete)', action:'Cut comparison view + dashboard bricks. Ship core 6 bricks only.'},
+  {trigger:'WiFi unreliable during demo slot', action:'Switch to pre-cached offline mode. All API calls serve from local JSON.'},
+  {trigger:'Dental scenario data insufficient', action:'Cut dental from demo. Run 2 scenarios: bleeding (hero) + knee pain (unbundling).'},
+];
+
+const SERVICE_CATEGORIES = [
+  {id:'dental-cleaning', display:'Dental Cleaning & Exam', insurance:'dental',
+   services:[{name:'Prophylaxis (adult cleaning)',code:'D1110',system:'CDT',range:'$75-$200'},
+             {name:'Periodic oral exam',code:'D0120',system:'CDT',range:'$30-$75'}],
+   dataSources:['FAIR Health dental','Manual: top 5 New Haven dentists'],
+   taxonomy:'1223G0001X', note:'Dental insurance: annual max, no deductible for preventive, 50/80/100% tiers'},
+  {id:'headache-workup', display:'Headache Evaluation & Testing', insurance:'medical',
+   services:[{name:'Office visit (moderate)',code:'99213-99214',system:'CPT',range:'$120-$250'},
+             {name:'MRI Brain w/o contrast',code:'70551',system:'CPT',range:'$400-$3,500'},
+             {name:'CT Head w/o contrast',code:'70450',system:'CPT',range:'$200-$1,800'}],
+   dataSources:['CMS PPL API','Turquoise SSP','DoltHub'],
+   taxonomy:'207Q00000X', note:'Huge imaging variance: freestanding center vs hospital'},
+  {id:'skin-rash', display:'Dermatology - Skin Rash', insurance:'medical',
+   services:[{name:'New patient visit (moderate)',code:'99203',system:'CPT',range:'$150-$350'},
+             {name:'Skin biopsy (if needed)',code:'11102',system:'CPT',range:'$150-$500'}],
+   dataSources:['CMS PPL API','NPPES'],
+   taxonomy:'207N00000X', note:'AI intake: "skin rash" -> dermatology (not PCP)'},
+  {id:'bleeding-triage', display:'Urgent Care vs ER (HERO)', insurance:'medical',
+   services:[{name:'UC visit (moderate)',code:'99213-99214',system:'CPT',range:'$150-$350'},
+             {name:'ER visit (moderate)',code:'99283',system:'CPT',range:'$1,500-$3,500'},
+             {name:'ER physician fee (separate bill)',code:'99283',system:'CPT',range:'$200-$600'}],
+   dataSources:['CMS PPL API','DoltHub','Turquoise SSP'],
+   taxonomy:'facility', note:'PITCH CLOSER: 10x price difference for same visit'},
+  {id:'knee-pain', display:'Knee Pain Evaluation', insurance:'medical',
+   services:[{name:'Ortho consultation (new)',code:'99203-99204',system:'CPT',range:'$175-$400'},
+             {name:'Knee X-ray (2 views)',code:'73560',system:'CPT',range:'$50-$250'},
+             {name:'Knee MRI (if ordered)',code:'73721',system:'CPT',range:'$400-$3,000'}],
+   dataSources:['CMS PPL API','Turquoise SSP','NPPES'],
+   taxonomy:'207X00000X', note:'Multi-service bundling with conditional MRI'},
+];
+
+const MOCK_PLANS = [
+  {name:'Anthem BCBS CT - Bronze HDHP',type:'HDHP',deductible:3000,coinsurance:'20%',copayPcp:'-',copaySpecialist:'-',copayER:'-',oopMax:7000,notes:'No copays until deductible met. All services subject to deductible.'},
+  {name:'UnitedHealthcare - Gold PPO',type:'PPO',deductible:500,coinsurance:'20%',copayPcp:'$25',copaySpecialist:'$50',copayER:'$250',oopMax:5000,notes:'Copays for office visits. Deductible applies to imaging and procedures.'},
+  {name:'Yale Health Plan',type:'HMO',deductible:0,coinsurance:'0%',copayPcp:'$0',copaySpecialist:'$20',copayER:'$100',oopMax:3000,notes:'No deductible. Must use Yale Health providers.'},
+  {name:'Delta Dental CT - Basic',type:'Dental',deductible:50,coinsurance:'-',copayPcp:'-',copaySpecialist:'-',copayER:'-',oopMax:1500,notes:'Preventive 100%, Basic 80%, Major 50%. Annual max $1,500.'},
+];
+
+let PRE_HACK_STATE = {};
+try { PRE_HACK_STATE = JSON.parse(localStorage.getItem('yhack-prehack')||'{}'); } catch(e) {}
+function savePreHack() { localStorage.setItem('yhack-prehack', JSON.stringify(PRE_HACK_STATE)); }
+
+const PRE_HACK_CHECKLIST = [
+  {category:'Data Prep (2-3h)',items:['Get CMS PPL API key (developer.cms.gov, may take 24-48h)','Test NPPES API for New Haven (ZIP 06510-06520)','Test Turquoise SSP API for 5 categories','Clone DoltHub hospital-price-transparency-v3','Scrape FAIR Health dental benchmarks for CT','Build local data fallback JSON for all 5 categories']},
+  {category:'Service Mapping (1h)',items:['Finalize 5 category YAML configs (codes, taxonomy, sources)','Build intent classification prompt (few-shot)','Test prompt with 20+ input variations']},
+  {category:'Browser Automation (2h)',items:['Test Anthem BCBS CT member portal with Playwright','Test UnitedHealthcare portal','Test Delta Dental CT portal','Record fallback screen capture (if live fails)','Test insurer "find a doctor" pages']},
+  {category:'Boilerplate (1h)',items:['React app scaffold with routing (intake/results/detail)','FastAPI skeleton with endpoint stubs','Google Maps link generator + phone tel: links','Provenance badge React component','Deploy pipeline (Render config)']},
+];
+
+const BRICK_DATA_FLOWS = {
+  'intent>oop': 'service category, CPT bundle',
+  'price>oop': 'allowed_amount range, sources',
+  'plan>oop': 'deductible, coinsurance, copay, OOP max',
+  'plan>browser': 'insurer portal URL',
+  'provider>network': 'NPI list for verification',
+  'oop>explain': 'estimate JSON + provenance tags',
+  'browser>plan': 'real deductible remaining',
+  'browser>network': 'verified network status',
+  'intent>provider': 'specialty taxonomy code',
+  'intent>price': 'CPT code bundle',
+};
+
+const BRICK_LAYERS = [
+  {label:'INPUT', ids:['intent','plan']},
+  {label:'DATA', ids:['provider','price','network','browser']},
+  {label:'COMPUTE', ids:['oop']},
+  {label:'OUTPUT', ids:['explain','comparison','dashboard']},
+];
+
 const NARRATIVE = [
   {num:'01',title:'THE PROBLEM',desc:'"You can compare flights in 60 seconds. You can\'t compare doctor visits at all. Not because the data doesn\'t exist — because no one has connected it."'},
   {num:'02',title:'THE INSIGHT',desc:'"The US government mandated 100+ TB of price transparency data. It\'s all public. But 70% of consumers still don\'t price-shop — the tools don\'t exist yet."'},
@@ -739,6 +862,7 @@ function saveState() {
     scenarios: SCENARIOS.map(s => ({id:s.id, selected:s.selected})),
     tasks: TASKS.map(t => ({id:t.id, status:t.status, owner:t.owner, start:t.start, rawHours:t.rawHours})),
     dataSources: DATA_SOURCES.map(d => ({id:d.id, status:d.status})),
+    risks: RISKS.map(r => ({id:r.id, status:r.status})),
     currentPage
   };
   try { localStorage.setItem('yhack-war-room', JSON.stringify(state)); } catch(e) {}
@@ -769,6 +893,10 @@ function loadState() {
     if (state.dataSources) state.dataSources.forEach(sd => {
       const d = DATA_SOURCES.find(x => x.id === sd.id);
       if (d) d.status = sd.status;
+    });
+    if (state.risks) state.risks.forEach(sr => {
+      const r = RISKS.find(x => x.id === sr.id);
+      if (r) r.status = sr.status;
     });
     if (state.currentPage) currentPage = state.currentPage;
   } catch(e) {}
@@ -820,7 +948,7 @@ function navigate(page) {
 }
 
 function renderSidebar() {
-  const labels = {race:'Race Info',awards:'Awards',brainstorm:'Brainstorm',bricks:'Lego Bricks',mvp:'MVP Builder',arch:'Architecture',submit:'Submission'};
+  const labels = {race:'Race Info',awards:'Awards',brainstorm:'Brainstorm',bricks:'Lego Bricks',mvp:'MVP Builder',arch:'Architecture',risks:'Risks',submit:'Submission'};
   document.getElementById('sidebarNav').innerHTML = PAGES.map((p,i) => `
     <div class="nav-item${p===currentPage?' active':''}" data-page="${p}" onclick="navigate('${p}')">
       <div class="nav-num">0${i+1}</div>
@@ -837,6 +965,7 @@ function getPageCompletion(page) {
   if (page==='bricks') return BRICKS.some(b=>b.selected);
   if (page==='mvp') return BRICKS.filter(b=>b.selected).length>=3;
   if (page==='arch') return DATA_SOURCES.some(d=>d.status!=='untested');
+  if (page==='risks') return RISKS.some(r=>r.status==='mitigated');
   if (page==='submit') return true;
   return false;
 }
@@ -924,8 +1053,23 @@ function renderBrainstorm() {
     {key:'ideas',title:'Ideas',sub:'Concrete solutions',addPlaceholder:'New idea...'},
     {key:'parked',title:'Parked',sub:'Not this hackathon',addPlaceholder:''},
   ];
+  // Compute downstream counts per pain point
+  const ppDownstream = {};
+  BRAINSTORM.painpoints.forEach(pp => {
+    const hmwCount = BRAINSTORM.hmw.filter(h => h.linked === pp.id).length;
+    const hmwIds = BRAINSTORM.hmw.filter(h => h.linked === pp.id).map(h => h.id);
+    const ideaCount = BRAINSTORM.ideas.filter(i => hmwIds.includes(i.hmw)).length;
+    ppDownstream[pp.id] = {hmw: hmwCount, ideas: ideaCount, total: hmwCount + ideaCount};
+  });
+
   document.getElementById('kanbanBoard').innerHTML = cols.map(col => {
     const items = BRAINSTORM[col.key] || [];
+    // Context-aware placeholder
+    let placeholder = col.addPlaceholder;
+    if (focusedThread && col.key !== 'painpoints' && col.key !== 'parked') {
+      const pp = BRAINSTORM.painpoints.find(p=>p.id===focusedThread);
+      if (pp) placeholder = `${col.key==='hmw'?'HMW':'Idea'} for "${pp.title.substring(0,20)}..."`;
+    }
     return `<div class="kanban-col">
       <div class="kanban-col-header">${col.title} <span>${items.length}</span></div>
       <div class="kanban-items">${items.map(item => {
@@ -933,10 +1077,12 @@ function renderBrainstorm() {
         const color = ppId ? getThreadColor(ppId) : '#999';
         const dimmed = focusedThread && ppId !== focusedThread;
         const linked = col.key === 'hmw' ? ` &larr; ${BRAINSTORM.painpoints.find(p=>p.id===item.linked)?.title.substring(0,15)||'?'}` : col.key === 'ideas' && item.hmw ? ` &larr; ${BRAINSTORM.hmw.find(h=>h.id===item.hmw)?.title.substring(0,20)||'?'}` : '';
+        const downstream = col.key==='painpoints' && ppDownstream[item.id] ? ppDownstream[item.id] : null;
         return `
-        <div class="kanban-card${dimmed?' thread-dim':''}" style="border-left-color:${color};--glow-color:${color};" data-thread="${ppId||''}"
+        <div class="kanban-card${dimmed?' thread-dim':''}" style="border-left-color:${color};border-top:4px solid ${color};--glow-color:${color};" data-thread="${ppId||''}"
           onmouseenter="highlightThread('${ppId||''}')" onmouseleave="unhighlightThread()">
           <h4>${item.title}</h4>
+          ${downstream ? `<div style="font-size:9px;color:${color};margin-bottom:4px;font-weight:700;">${downstream.hmw} HMW + ${downstream.ideas} ideas</div>` : ''}
           ${linked ? `<p style="font-size:10px;color:${color};margin-bottom:6px;font-weight:500;">${linked}</p>` : ''}
           ${item.desc ? `<p>${item.desc}</p>` : ''}
           ${col.key==='painpoints' && item.consumer ? `<div class="card-meta"><span class="meta-tag" style="border-color:${color};color:${color};">Target: ${item.consumer}</span></div>` : ''}
@@ -950,7 +1096,7 @@ function renderBrainstorm() {
           </div>
         </div>`;
       }).join('')}</div>
-      ${col.addPlaceholder ? `<div class="kanban-add"><input placeholder="${col.addPlaceholder}" onkeydown="if(event.key==='Enter')addBrainstorm('${col.key}',this)"></div>` : ''}
+      ${placeholder ? `<div class="kanban-add"><input placeholder="${placeholder}" onkeydown="if(event.key==='Enter')addBrainstorm('${col.key}',this)"></div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1060,23 +1206,41 @@ function renderBricks() {
   ).join('') + `<button onclick="askClaude('newBrick')" class="btn-claude" style="background:var(--accent-2);color:#fff;border-color:var(--accent-2);margin-left:auto;">Ask Claude: New Brick</button>`;
   // Grid
   const filtered = brickFilter==='all' ? BRICKS : BRICKS.filter(b=>b.category===brickFilter);
-  document.getElementById('brickGrid').innerHTML = filtered.map(b => `
+  document.getElementById('brickGrid').innerHTML = filtered.map(b => {
+    const teamColors = {austin:'var(--accent-2)',cs:'var(--accent-3)',medical:'var(--accent)',consultant:'var(--medium)'};
+    const teamLabels = {austin:'Austin',cs:'CS',medical:'Med',consultant:'Con'};
+    const teamInitials = {austin:'A',cs:'CS',medical:'M',consultant:'C'};
+    const depsHtml = b.deps.length > 0 ? b.deps.map(d => {
+      const dep = BRICKS.find(x=>x.id===d);
+      const ok = dep && dep.selected;
+      return `<span class="brick-dep-chip">${dep?dep.emoji:''} ${dep?dep.name:d} <span class="dep-dot ${ok?'ok':'missing'}"></span></span>`;
+    }).join('') : '<span style="font-size:9px;color:#aaa;">No dependencies</span>';
+    const teamHtml = Object.keys(b.teamAssign||{}).filter(k=>b.teamAssign[k]).map(k =>
+      `<span class="brick-team-dot" style="background:${teamColors[k]};color:#fff;" title="${teamLabels[k]}: ${b.teamAssign[k]}">${teamInitials[k]}</span>`
+    ).join('');
+    return `
     <div class="brick${b.selected?' selected':''}" onclick="toggleBrick('${b.id}')">
       <div class="brick-cat">${b.category}</div>
       <div class="brick-top">
         <div class="brick-emoji">${b.emoji}</div>
         <div class="brick-info"><div class="brick-name">${b.name}</div><div class="brick-desc">${b.desc}</div></div>
       </div>
+      ${b.firstStep ? `<div class="brick-first-step" onclick="event.stopPropagation();this.classList.toggle('expanded');" title="Click to expand"><strong style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:${b.selected?'#666':'var(--accent-2)'};">First Step:</strong> ${b.firstStep}</div>` : ''}
       <div class="brick-meta">
-        ${b.prizes.map(p=>`<span class="tag tag-prize">${p}</span>`).join('')}
         <span class="tag tag-${b.difficulty}">${b.difficulty}</span>
         <span class="tag">${b.timeHours}h</span>
+        ${b.prizes.map(p=>`<span class="tag tag-prize">${p}</span>`).join('')}
       </div>
-      <div class="brick-actions">
-        <button class="btn-info" onclick="event.stopPropagation();openDetail('${b.id}')">INFO</button>
+      <div class="brick-deps"><span style="font-size:8px;text-transform:uppercase;letter-spacing:1px;color:${b.selected?'#666':'var(--text-dim)'};margin-right:4px;">Deps:</span> ${depsHtml}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 14px;">
+        <div class="brick-team"><span style="font-size:8px;text-transform:uppercase;letter-spacing:1px;color:${b.selected?'#666':'var(--text-dim)'};margin-right:4px;">Team:</span> ${teamHtml}</div>
+        <div class="brick-actions" style="padding:0;">
+          <button class="btn-info" onclick="event.stopPropagation();openDetail('${b.id}')">INFO</button>
+        </div>
       </div>
-    </div>
-  `).join('');
+      ${b.hardest ? `<div class="brick-hardest" title="${b.hardest}">Hardest: ${b.hardest}</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 function toggleBrick(id) { const b = BRICKS.find(x=>x.id===id); if(b){b.selected=!b.selected; saveState(); renderBricks(); renderMVP(); renderSidebar();} }
@@ -1137,22 +1301,9 @@ function renderMVP() {
   }));
   if (totalH > 20) warnings.push(`Total estimated: ${totalH}h — exceeds 20h safe window. Cut scope.`);
 
-  // User stories
-  const stories = sel.map(b => {
-    const storyMap = {
-      intent: 'As an <strong>insured patient</strong>, I want to <strong>describe my symptom in plain English</strong> so that <strong>the system tells me what kind of care I need and what it likely costs</strong>.',
-      provider: 'As an <strong>insured patient</strong>, I want a <strong>single map showing nearby providers for my need</strong> so that <strong>I don\'t have to search 5 different apps</strong>.',
-      network: 'As an <strong>insured patient</strong>, I want to <strong>see network status with its source and confidence level</strong> so that <strong>I avoid surprise out-of-network bills</strong>.',
-      oop: 'As an <strong>insured patient</strong>, I want an <strong>out-of-pocket estimate with the math shown step-by-step</strong> so that <strong>I know what I\'ll owe before I commit</strong>.',
-      price: 'As a <strong>product</strong>, I need <strong>benchmark price data from multiple public APIs</strong> so that <strong>the OOP estimator has a credible allowed amount to calculate from</strong>.',
-      plan: 'As an <strong>insured patient</strong>, I want to <strong>answer 4 simple questions about my insurance</strong> so that <strong>my deductible and copay flow into the cost estimate automatically</strong>.',
-      explain: 'As an <strong>insured patient</strong>, I want a <strong>plain-English explanation of my cost estimate</strong> so that <strong>I understand not just the number, but why it is what it is</strong>.',
-      browser: 'As an <strong>insured patient</strong>, I want the system to <strong>help me check my real deductible balance from my insurer portal</strong> so that <strong>my estimate narrows from $40-$200 to $40-$55</strong>.',
-      comparison: 'As an <strong>insured patient</strong>, I want to <strong>compare 3 providers side-by-side with cost ranges</strong> so that <strong>I can choose like I\'m choosing a flight</strong>.',
-      dashboard: 'As a <strong>judge</strong>, I want to <strong>see the raw price variance problem visualized</strong> so that <strong>I understand why this product is necessary</strong>.',
-    };
-    return {brick:b, story: storyMap[b.id] || `As a user, I want ${b.name} so that I benefit.`};
-  });
+  // Scenario impact summary
+  const selScenarios = SCENARIOS.filter(s=>s.selected);
+  const scenarioSummary = selScenarios.length > 0 ? selScenarios.map(s=>s.demo_value).join(', ') : 'No scenarios selected';
 
   // UX Journey steps
   const uxSteps = [
@@ -1171,13 +1322,7 @@ function renderMVP() {
     ${warnings.map(w=>`<div class="warning-box">${w}</div>`).join('')}
 
     <div class="mvp-hero">
-      <div class="section-title">Demo Scenarios (pick 2-3)</div>
-    <div id="scenarioPicker"></div>
-
-    <div class="section-title">Task Timeline</div>
-    <div id="ganttView"></div>
-
-    <div class="mvp-hero-panel why">
+      <div class="mvp-hero-panel why">
         <div class="mvp-hero-label">// WHY THIS MATTERS</div>
         <div class="mvp-hero-text">70% of Americans don't price-shop for healthcare — not by choice, because the tools don't exist. 100TB of public data. Zero consumer tools connecting it.</div>
       </div>
@@ -1191,6 +1336,12 @@ function renderMVP() {
       </div>
     </div>
 
+    <div class="section-title">Demo Scenarios (pick 2-3)</div>
+    <div id="scenarioPicker"></div>
+    <div style="padding:10px 14px;background:var(--surface);border:2px solid var(--text);margin-top:-8px;margin-bottom:24px;font-size:11px;">
+      <strong style="color:var(--accent-2);">Selected scenarios test:</strong> ${scenarioSummary}
+    </div>
+
     <div class="ux-journey">
       <div class="ux-journey-title">End-to-End Patient Journey</div>
       <div class="ux-journey-steps">
@@ -1198,11 +1349,10 @@ function renderMVP() {
           const hasBrick = step.brick && sel.some(b => b.id === step.brick);
           const isActive = !step.brick || hasBrick;
           const dimmed = step.brick && !hasBrick;
-          return `${i > 0 ? '<div class="ux-arrow">&#9654;</div>' : ''}<div class="ux-step${isActive && !dimmed ? ' active-step' : ''}" style="${dimmed ? 'opacity:.25;' : ''}">${'<div class="ux-step-emoji">' + step.emoji + '</div>'}<div class="ux-step-label">${step.label}</div><div class="ux-step-desc">${step.desc}</div>${step.brick ? '<div class="ux-step-brick">' + step.brick + '</div>' : ''}</div>`;
+          const matchedBrick = step.brick ? BRICKS.find(b => b.id === step.brick) : null;
+          const brickLabel = matchedBrick ? `<div class="ux-step-brick">${matchedBrick.emoji} ${matchedBrick.name}</div>` : '';
+          return `${i > 0 ? '<div class="ux-arrow">&#9654;</div>' : ''}<div class="ux-step${isActive && !dimmed ? ' active-step' : ''}" style="${dimmed ? 'opacity:.25;' : ''}"><div class="ux-step-emoji">${step.emoji}</div><div class="ux-step-label">${step.label}</div><div class="ux-step-desc">${step.desc}</div>${brickLabel}</div>`;
         }).join('')}
-      </div>
-      <div style="margin-top:14px;">
-        <button class="btn btn-claude" onclick="askClaude('uxReview')">Ask Claude: UX Integration Review</button>
       </div>
     </div>
 
@@ -1210,12 +1360,6 @@ function renderMVP() {
       <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;">Prize Coverage (${cov.size}/${ALL_PRIZES.length})</span>
       ${ALL_PRIZES.map(p=>`<span class="tag ${cov.has(p)?'tag-prize':''}" style="${cov.has(p)?'':'opacity:.3;'}font-size:10px;">${p}</span>`).join('')}
       <button class="btn" style="background:var(--accent);color:#fff;border-color:var(--accent);font-size:9px;padding:4px 10px;" onclick="askClaude('guru')">Strategy Review</button>
-    </div>
-
-    <div class="user-stories-compact">
-      <div class="usc-header">User Stories (${stories.length})</div>
-      ${stories.map(s=>`<div class="user-story-compact">${s.story}</div>`).join('')}
-      <div style="padding:8px 14px;"><button class="btn btn-claude" style="width:100%;font-size:10px;" onclick="askClaude('userStories')">Improve Stories</button></div>
     </div>
 
     <div class="section-title">12 Winning Dimensions Self-Check</div>
@@ -1278,7 +1422,6 @@ function renderMVP() {
   `;
   // Render sub-components
   renderScenarios();
-  renderGantt();
 }
 
 // RUBRIC (12 Winning Dimensions from playbook)
@@ -1347,14 +1490,70 @@ function renderRubricItems() {
 }
 
 // P6: SUBMISSION
+const NARRATIVE_TIMES = [15,15,20,15,20,10,15]; // seconds per step
+let narrativeState = {};
+let submitCheckState = {};
+let selectedJudgeTrack = null;
+try { narrativeState = JSON.parse(localStorage.getItem('yhack-narr')||'{}'); } catch(e) {}
+try { submitCheckState = JSON.parse(localStorage.getItem('yhack-submitcheck')||'{}'); } catch(e) {}
+function saveNarrState() { localStorage.setItem('yhack-narr', JSON.stringify(narrativeState)); }
+function saveSubmitCheck() { localStorage.setItem('yhack-submitcheck', JSON.stringify(submitCheckState)); }
+function toggleNarr(num) { narrativeState[num]=!narrativeState[num]; saveNarrState(); renderSubmission(); }
+function toggleSubmitCheck(id) { submitCheckState[id]=!submitCheckState[id]; saveSubmitCheck(); renderSubmission(); }
+function selectJudgeTrack(track) { selectedJudgeTrack = selectedJudgeTrack===track?null:track; renderSubmission(); }
+
+const SUBMISSION_CHECKLIST = [
+  {id:'sc1', item:'Devpost project page created'},
+  {id:'sc2', item:'Video recorded and uploaded (2 min max)'},
+  {id:'sc3', item:'GitHub repo linked on Devpost'},
+  {id:'sc4', item:'All team members listed on Devpost'},
+  {id:'sc5', item:'At least 1 member at judging (Kline Tower 205)'},
+  {id:'sc6', item:'Demo machine charged + WiFi tested'},
+  {id:'sc7', item:'Offline fallback mode verified'},
+  {id:'sc8', item:'Pitch rehearsed 3+ times'},
+];
+
 function renderSubmission() {
+  const totalSeconds = NARRATIVE.reduce((s,_,i) => s + (narrativeState[NARRATIVE[i].num] ? NARRATIVE_TIMES[i] : 0), 0);
+  const checkedNarr = NARRATIVE.filter(n=>narrativeState[n.num]).length;
+  const overTime = totalSeconds > 120;
+  const selBricks = BRICKS.filter(b=>b.selected);
+
   document.getElementById('submitContent').innerHTML = `
     <div class="section-title">Demo Narrative Flow</div>
-    ${NARRATIVE.map(s=>`<div class="narr-step"><div class="narr-num">${s.num}</div><div class="narr-content"><h4>${s.title}</h4><p>${s.desc}</p></div></div>`).join('')}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:12px;background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);">
+      <div>
+        <span style="font-size:28px;font-weight:700;color:${overTime?'var(--accent)':'var(--easy)'};">${Math.floor(totalSeconds/60)}:${String(totalSeconds%60).padStart(2,'0')}</span>
+        <span style="font-size:10px;color:var(--text-dim);margin-left:8px;">/ 2:00 target</span>
+      </div>
+      <div style="font-size:11px;">${checkedNarr}/${NARRATIVE.length} steps rehearsed</div>
+      ${overTime ? '<div class="warning-box" style="margin:0;padding:6px 10px;">Over 2 minutes! Cut or compress.</div>' : ''}
+    </div>
+    ${NARRATIVE.map((s,i) => {
+      const checked = narrativeState[s.num];
+      return `<div class="narr-step" style="cursor:pointer;${checked?'opacity:.6;':''}" onclick="toggleNarr('${s.num}')">
+        <div class="narr-num" style="${checked?'color:var(--easy);':''}">${checked?'&#10003;':s.num}</div>
+        <div class="narr-content" style="flex:1;">
+          <h4 style="${checked?'text-decoration:line-through;':''}">${s.title} <span style="font-size:9px;color:var(--text-dim);font-weight:400;">(~${NARRATIVE_TIMES[i]}s)</span></h4>
+          <p>${s.desc}</p>
+        </div>
+      </div>`;
+    }).join('')}
     <button class="btn btn-claude" style="margin:12px 0 24px;" onclick="askClaude('pitchScript')">Ask Claude: Write Pitch Script</button>
 
-    <div class="section-title">Judge Talking Points</div>
-    ${JUDGE_POINTS.map(j=>`<div class="judge-card"><h4>${j.track}</h4><p>${j.points}</p></div>`).join('')}
+    <div class="section-title">Judge Talking Points <span style="font-size:10px;color:var(--text-dim);font-weight:400;">Click a track to focus</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+      ${[...new Set(JUDGE_POINTS.map(j=>j.track))].map(t => `<button class="btn ${selectedJudgeTrack===t?'btn-primary':'btn-secondary'}" style="font-size:9px;padding:4px 10px;" onclick="selectJudgeTrack('${t}')">${t}</button>`).join('')}
+    </div>
+    ${JUDGE_POINTS.map(j => {
+      const dimmed = selectedJudgeTrack && selectedJudgeTrack !== j.track;
+      const matchingBricks = selBricks.filter(b => b.prizes.some(p => j.track.includes(p.split(' ')[0]) || p.includes(j.track.split(' ')[0])));
+      return `<div class="judge-card" style="${dimmed?'opacity:.2;':''}">
+        <h4>${j.track}</h4>
+        <p>${j.points}</p>
+        ${!dimmed && matchingBricks.length ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">${matchingBricks.map(b=>`<span class="tag tag-prize" style="font-size:8px;">${b.emoji} ${b.name}</span>`).join('')}</div>` : ''}
+      </div>`;
+    }).join('')}
 
     <div class="section-title">Video Tips</div>
     <div class="tip-grid">
@@ -1363,6 +1562,15 @@ function renderSubmission() {
       <div class="tip-card"><div class="icon">&#127974;</div><h4>Show raw data first</h4><p>Open with a raw TiC file or turquoise.health. "This is 100TB of public data. Here's what we built on top."</p></div>
       <div class="tip-card"><div class="icon">&#127942;</div><h4>Name every API</h4><p>"Powered by Gemini, CMS PPL, NPPES, Hex." Name them. Sponsors who provided them are in the room.</p></div>
     </div>
+
+    <div class="section-title" style="margin-top:24px;">Pre-Submission Launch Checklist</div>
+    ${SUBMISSION_CHECKLIST.map(c => {
+      const checked = submitCheckState[c.id];
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface);border:2px solid var(--text);border-left:4px solid ${checked?'var(--easy)':'#ccc'};margin-bottom:3px;cursor:pointer;" onclick="toggleSubmitCheck('${c.id}')">
+        <span style="font-size:16px;flex-shrink:0;">${checked?'<span style="color:var(--easy);">&#10003;</span>':'&#9744;'}</span>
+        <span style="font-size:12px;${checked?'text-decoration:line-through;color:var(--text-dim);':''}">${c.item}</span>
+      </div>`;
+    }).join('')}
   `;
 }
 
@@ -1476,7 +1684,7 @@ function toggleScenario(id) {
   const selCount = SCENARIOS.filter(x => x.selected).length;
   if (!s.selected && selCount >= 3) { showToast('Max 3 scenarios. Deselect one first.'); return; }
   s.selected = !s.selected;
-  saveState(); renderScenarios(); renderGantt();
+  saveState(); renderScenarios(); renderGantt('ganttViewArch');
 }
 
 function renderScenarios() {
@@ -1505,11 +1713,11 @@ function cycleTaskStatus(id) {
   if (!t) return;
   const order = ['todo','in_progress','done'];
   t.status = order[(order.indexOf(t.status) + 1) % 3];
-  saveState(); renderGantt();
+  saveState(); renderGantt('ganttViewArch');
 }
 
-function renderGantt() {
-  const container = document.getElementById('ganttView');
+function renderGantt(targetId) {
+  const container = document.getElementById(targetId || 'ganttView');
   if (!container) return;
   const totalHours = 24;
   const pxPerHour = 40;
@@ -1595,23 +1803,201 @@ function renderArch() {
     </div>
   `;
 
-  // Brick composition
+  // Interactive Brick Architecture (layered DAG)
   const sel = BRICKS.filter(b => b.selected);
-  const brickFlow = `
-    <div class="section-title">Brick Composition Flow</div>
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:24px;">
-      ${sel.map(b => {
-        const hasDeps = b.deps.length > 0;
-        const depNames = b.deps.map(d => BRICKS.find(x=>x.id===d)?.name||d).join(', ');
-        return `<div class="arch-box" style="flex:0 0 auto;padding:8px 12px;" title="${hasDeps?'Depends on: '+depNames:'No dependencies'}">${b.emoji} ${b.name}</div><div style="font-size:16px;color:var(--text-dim);">\u2192</div>`;
+  const allBrickIds = new Set(BRICKS.map(b=>b.id));
+  // Build reverse deps (who depends on me)
+  const reverseDeps = {};
+  BRICKS.forEach(b => { b.deps.forEach(d => { if(!reverseDeps[d]) reverseDeps[d]=[]; reverseDeps[d].push(b.id); }); });
+
+  const brickArch = `
+    <div class="section-title">Brick Architecture (Interactive) <span style="font-size:10px;color:var(--text-dim);font-weight:400;">Click a brick to see data flows</span></div>
+    <div id="brickArchDag" style="border:3px solid var(--text);background:var(--surface);padding:20px;margin-bottom:24px;box-shadow:var(--shadow);">
+      ${BRICK_LAYERS.map(layer => {
+        const layerBricks = layer.ids.map(id => BRICKS.find(b=>b.id===id)).filter(Boolean);
+        if (layerBricks.length === 0) return '';
+        return `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);margin-bottom:6px;font-weight:700;">${layer.label} LAYER</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            ${layerBricks.map(b => {
+              const isSel = b.selected;
+              const dsStatus = DATA_SOURCES.find(d=>d.brick===b.id);
+              const borderColor = !isSel ? '#ccc' : dsStatus ? (dsStatus.status==='works'?'var(--easy)':dsStatus.status==='broken'?'var(--accent)':dsStatus.status==='mocked'?'var(--medium)':'var(--text)') : 'var(--text)';
+              // Data flow labels for this brick
+              const inflows = Object.entries(BRICK_DATA_FLOWS).filter(([k])=>k.split('>')[1]===b.id).map(([k,v])=>`${BRICKS.find(x=>x.id===k.split('>')[0])?.emoji||''} ${v}`);
+              const outflows = Object.entries(BRICK_DATA_FLOWS).filter(([k])=>k.split('>')[0]===b.id).map(([k,v])=>`${v} ${BRICKS.find(x=>x.id===k.split('>')[1])?.emoji||''}`);
+              return `<div class="arch-brick-node" data-brick="${b.id}" onclick="event.stopPropagation();highlightBrickArch('${b.id}')" style="flex:1;min-width:140px;max-width:280px;padding:12px;border:3px solid ${borderColor};background:${isSel?'var(--bg)':'var(--surface-alt)'};opacity:${isSel?1:.35};cursor:pointer;transition:all .15s;position:relative;">
+                <div style="font-size:20px;margin-bottom:4px;">${b.emoji}</div>
+                <div style="font-size:12px;font-weight:700;">${b.name}</div>
+                <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">${b.desc.substring(0,60)}${b.desc.length>60?'...':''}</div>
+                ${b.deps.length > 0 ? `<div style="margin-top:6px;font-size:8px;color:var(--accent-2);">Needs: ${b.deps.map(d=>{const dep=BRICKS.find(x=>x.id===d);return dep?dep.emoji+' '+dep.name:d;}).join(', ')}</div>` : ''}
+                ${reverseDeps[b.id] ? `<div style="margin-top:2px;font-size:8px;color:var(--accent-3);">Feeds: ${reverseDeps[b.id].map(d=>{const dep=BRICKS.find(x=>x.id===d);return dep?dep.emoji+' '+dep.name:d;}).join(', ')}</div>` : ''}
+                <div class="brick-flow-detail" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid #ddd;font-size:9px;">
+                  ${inflows.length ? `<div style="color:var(--accent-2);margin-bottom:2px;"><strong>IN:</strong> ${inflows.join(' | ')}</div>` : ''}
+                  ${outflows.length ? `<div style="color:var(--accent-3);"><strong>OUT:</strong> ${outflows.join(' | ')}</div>` : ''}
+                </div>
+                ${dsStatus ? `<div style="position:absolute;top:4px;right:4px;"><span class="ds-status ${dsStatus.status}" style="font-size:7px;padding:1px 4px;">${dsStatus.status}</span></div>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
       }).join('')}
-      <div class="arch-box" style="flex:0 0 auto;padding:8px 12px;background:var(--accent-3);color:#fff;border-color:var(--accent-3);">\u{1F4CD} Google Maps + \u{1F4DE} Phone</div>
+      <div style="display:flex;gap:12px;margin-top:8px;font-size:9px;color:var(--text-dim);">
+        <span><span style="display:inline-block;width:10px;height:10px;border:2px solid var(--easy);margin-right:4px;"></span>API works</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border:2px solid var(--accent);margin-right:4px;"></span>API broken</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border:2px solid var(--medium);margin-right:4px;"></span>Mocked</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border:2px solid var(--text);margin-right:4px;"></span>Untested</span>
+        <span style="opacity:.35;"><span style="display:inline-block;width:10px;height:10px;border:2px solid #ccc;margin-right:4px;"></span>Not selected</span>
+      </div>
     </div>
   `;
 
-  // Data sources table
+  // Service Categories
+  const serviceCategories = `
+    <div class="section-title">Service Category Mapping (5 Demo Scenarios)</div>
+    <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:24px;">
+      ${SERVICE_CATEGORIES.map(cat => `
+        <details style="border:2px solid var(--text);background:var(--surface);">
+          <summary style="padding:12px 16px;cursor:pointer;font-size:12px;font-weight:700;display:flex;justify-content:space-between;align-items:center;">
+            <span>${cat.display}</span>
+            <span style="display:flex;gap:6px;">
+              <span class="tag" style="font-size:8px;">${cat.insurance}</span>
+              <span class="tag" style="font-size:8px;">Tax: ${cat.taxonomy}</span>
+            </span>
+          </summary>
+          <div style="padding:12px 16px;border-top:1px solid var(--surface-alt);">
+            <table class="ds-table" style="margin-bottom:8px;">
+              <tr><th>Service</th><th>Code</th><th>System</th><th>Range</th></tr>
+              ${cat.services.map(s => `<tr><td>${s.name}</td><td><code>${s.code}</code></td><td>${s.system}</td><td style="font-weight:700;">${s.range}</td></tr>`).join('')}
+            </table>
+            <div style="font-size:10px;color:var(--text-dim);">Data: ${cat.dataSources.join(', ')}</div>
+            ${cat.note ? `<div style="font-size:10px;color:var(--accent);margin-top:4px;font-weight:500;">${cat.note}</div>` : ''}
+          </div>
+        </details>
+      `).join('')}
+    </div>
+  `;
+
+  // Rules Engine
+  const rulesEngine = `
+    <div class="section-title">Rules Engine (Deterministic OOP Calculation)</div>
+    <pre style="background:var(--text);color:var(--bg);padding:16px;font-size:11px;line-height:1.6;overflow-x:auto;margin-bottom:24px;border:3px solid var(--accent-2);box-shadow:var(--shadow);">
+<span style="color:#888;">// Deterministic — NO AI does the math</span>
+<span style="color:var(--accent-2);">def</span> estimate_oop(allowed_low, allowed_high, plan):
+    results = []
+    <span style="color:var(--accent-2);">for</span> allowed <span style="color:var(--accent-2);">in</span> [allowed_low, allowed_high]:
+        <span style="color:var(--accent-2);">if</span> plan.deductible_remaining <span style="color:var(--accent-2);">is</span> None:
+            <span style="color:#888;">// Unknown deductible — show BOTH scenarios</span>
+            scenario_met = calc_post_deductible(allowed, plan)
+            scenario_not = min(allowed, plan.deductible)
+            results.append({
+                "if_deductible_met": scenario_met,
+                "if_deductible_not_met": scenario_not,
+                "assumption": <span style="color:var(--accent-3);">"deductible status unknown"</span>
+            })
+        <span style="color:var(--accent-2);">elif</span> plan.deductible_remaining > 0:
+            applied = min(allowed, plan.deductible_remaining)
+            remaining = allowed - applied
+            coinsurance = remaining * plan.coinsurance_rate
+            results.append(applied + coinsurance)
+        <span style="color:var(--accent-2);">else</span>:
+            results.append(allowed * plan.coinsurance_rate)
+    <span style="color:var(--accent-2);">return</span> cap_at_oop_max(results, plan)</pre>
+  `;
+
+  // Mock Plans
+  const mockPlans = `
+    <div class="section-title">Mock Plan Configurations</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:24px;">
+      ${MOCK_PLANS.map(p => `
+        <div class="card" style="padding:14px;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-2);margin-bottom:4px;">${p.type}</div>
+          <h4 style="font-size:12px;margin-bottom:8px;">${p.name}</h4>
+          <div style="font-size:11px;display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+            <span>Deductible:</span><strong>$${p.deductible.toLocaleString()}</strong>
+            <span>Coinsurance:</span><strong>${p.coinsurance}</strong>
+            <span>OOP Max:</span><strong>$${p.oopMax.toLocaleString()}</strong>
+            <span>Copay PCP:</span><strong>${p.copayPcp}</strong>
+            <span>Copay Specialist:</span><strong>${p.copaySpecialist}</strong>
+            <span>Copay ER:</span><strong>${p.copayER}</strong>
+          </div>
+          <div style="font-size:9px;color:var(--text-dim);margin-top:6px;border-top:1px solid var(--surface-alt);padding-top:4px;">${p.notes}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // File Structure
+  const fileStructure = `
+    <div class="section-title">Repo File Structure</div>
+    <pre style="background:var(--text);color:var(--bg);padding:16px;font-size:10px;line-height:1.5;overflow-x:auto;margin-bottom:24px;border:3px solid var(--text);">
+yhack/
+\u251C\u2500\u2500 frontend/
+\u2502   \u251C\u2500\u2500 src/
+\u2502   \u2502   \u251C\u2500\u2500 pages/
+\u2502   \u2502   \u2502   \u251C\u2500\u2500 <span style="color:var(--accent-2);">IntakePage.tsx</span>        <span style="color:#888;"># Chat input + insurance</span>
+\u2502   \u2502   \u2502   \u251C\u2500\u2500 <span style="color:var(--accent-2);">ResultsPage.tsx</span>      <span style="color:#888;"># Provider map + cards</span>
+\u2502   \u2502   \u2502   \u2514\u2500\u2500 <span style="color:var(--accent-2);">DetailPage.tsx</span>       <span style="color:#888;"># Full provenance</span>
+\u2502   \u2502   \u251C\u2500\u2500 components/
+\u2502   \u2502   \u2502   \u251C\u2500\u2500 ProvenanceBadge.tsx   <span style="color:#888;"># FACT/INFERRED/ASSUMED</span>
+\u2502   \u2502   \u2502   \u251C\u2500\u2500 PriceRange.tsx        <span style="color:#888;"># Visual range bar</span>
+\u2502   \u2502   \u2502   \u251C\u2500\u2500 ProviderCard.tsx      <span style="color:#888;"># Provider + estimate</span>
+\u2502   \u2502   \u2502   \u251C\u2500\u2500 ComparisonView.tsx    <span style="color:#888;"># UC vs ER side-by-side</span>
+\u2502   \u2502   \u2502   \u2514\u2500\u2500 DeductibleCheck.tsx   <span style="color:#888;"># Browser trigger</span>
+\u2502   \u2502   \u2514\u2500\u2500 lib/
+\u2502   \u2502       \u251C\u2500\u2500 api.ts               <span style="color:#888;"># Backend client</span>
+\u2502   \u2502       \u2514\u2500\u2500 maps.ts              <span style="color:#888;"># Google Maps links</span>
+\u2502   \u2514\u2500\u2500 package.json
+\u251C\u2500\u2500 backend/
+\u2502   \u251C\u2500\u2500 <span style="color:var(--accent-3);">main.py</span>                   <span style="color:#888;"># FastAPI app</span>
+\u2502   \u251C\u2500\u2500 routers/
+\u2502   \u2502   \u251C\u2500\u2500 classify.py           <span style="color:#888;"># Intent (Claude API)</span>
+\u2502   \u2502   \u251C\u2500\u2500 providers.py          <span style="color:#888;"># NPPES search</span>
+\u2502   \u2502   \u251C\u2500\u2500 estimate.py           <span style="color:#888;"># OOP calc</span>
+\u2502   \u2502   \u2514\u2500\u2500 browser.py            <span style="color:#888;"># Playwright</span>
+\u2502   \u251C\u2500\u2500 services/
+\u2502   \u2502   \u251C\u2500\u2500 rules_engine.py       <span style="color:#888;"># Deterministic OOP</span>
+\u2502   \u2502   \u251C\u2500\u2500 price_fetcher.py      <span style="color:#888;"># Multi-source prices</span>
+\u2502   \u2502   \u2514\u2500\u2500 nppes_client.py       <span style="color:#888;"># NPPES wrapper</span>
+\u2502   \u2514\u2500\u2500 data/
+\u2502       \u251C\u2500\u2500 categories.json       <span style="color:#888;"># 5 service configs</span>
+\u2502       \u251C\u2500\u2500 plans.json            <span style="color:#888;"># Mock plans</span>
+\u2502       \u2514\u2500\u2500 fallback_prices.json  <span style="color:#888;"># Offline cache</span>
+\u2514\u2500\u2500 render.yaml</pre>
+  `;
+
+  // Pre-Hack Checklist
+  const preHackChecklist = `
+    <div class="section-title">Pre-Hackathon Prep Checklist</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+      ${PRE_HACK_CHECKLIST.map(cat => `
+        <div class="card" style="padding:14px;">
+          <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;color:var(--accent-2);">${cat.category}</h4>
+          ${cat.items.map((item,i) => {
+            const key = cat.category.substring(0,4)+i;
+            const checked = PRE_HACK_STATE[key];
+            return `<div style="display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:11px;cursor:pointer;${checked?'opacity:.5;text-decoration:line-through;':''}" onclick="PRE_HACK_STATE['${key}']=!PRE_HACK_STATE['${key}'];savePreHack();renderArch();">
+              <span style="font-size:14px;flex-shrink:0;">${checked?'<span style="color:var(--easy);">&#10003;</span>':'&#9744;'}</span>
+              <span>${item}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Data sources table with status summary
+  const dsCounts = {untested:0,works:0,broken:0,mocked:0};
+  DATA_SOURCES.forEach(d => { if(dsCounts[d.status]!==undefined) dsCounts[d.status]++; });
   const dsTable = `
-    <div class="section-title">Data Sources <span style="font-size:10px;color:var(--text-dim);font-weight:400;">Click status to cycle: untested \u2192 works \u2192 broken \u2192 mocked</span></div>
+    <div class="section-title">Data Sources <span style="font-size:10px;color:var(--text-dim);font-weight:400;">Click status to cycle</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <span class="ds-status works" style="cursor:default;">${dsCounts.works} works</span>
+      <span class="ds-status broken" style="cursor:default;">${dsCounts.broken} broken</span>
+      <span class="ds-status mocked" style="cursor:default;">${dsCounts.mocked} mocked</span>
+      <span class="ds-status untested" style="cursor:default;">${dsCounts.untested} untested</span>
+    </div>
     <table class="ds-table">
       <tr><th>Source</th><th>Type</th><th>Access</th><th>Brick</th><th>Status</th></tr>
       ${DATA_SOURCES.map(d => {
@@ -1707,22 +2093,125 @@ function renderArch() {
     </div>
   `;
 
-  container.innerHTML = demos + diagram + brickFlow + dsTable + `<div class="section-title" style="margin-top:32px;">Task Timeline</div><div id="ganttViewArch"></div>` + roadmap + manual;
+  container.innerHTML = demos + diagram + brickArch + serviceCategories + rulesEngine + mockPlans + dsTable + `<div class="section-title" style="margin-top:32px;">Task Timeline</div><div id="ganttViewArch"></div>` + preHackChecklist + fileStructure + roadmap + manual;
 
-  // Render gantt inside arch page too
-  const ganttArch = document.getElementById('ganttViewArch');
-  if (ganttArch) {
-    // Clone gantt into arch view
-    renderGantt();
-    const ganttMain = document.getElementById('ganttView');
-    if (ganttMain) ganttArch.innerHTML = ganttMain.innerHTML;
+  // Render gantt directly into arch page
+  renderGantt('ganttViewArch');
+}
+
+// Brick architecture highlight interaction
+let highlightedBrick = null;
+function highlightBrickArch(id) {
+  if (highlightedBrick === id) { highlightedBrick = null; } else { highlightedBrick = id; }
+  document.querySelectorAll('.arch-brick-node').forEach(node => {
+    const nid = node.dataset.brick;
+    const brick = BRICKS.find(b=>b.id===nid);
+    if (!highlightedBrick) {
+      node.style.boxShadow = '';
+      node.querySelector('.brick-flow-detail').style.display = 'none';
+      return;
+    }
+    const target = BRICKS.find(b=>b.id===highlightedBrick);
+    if (nid === highlightedBrick) {
+      node.style.boxShadow = '0 0 0 4px var(--accent-2)';
+      node.querySelector('.brick-flow-detail').style.display = 'block';
+    } else if (target && target.deps.includes(nid)) {
+      node.style.boxShadow = '0 0 0 3px var(--accent)';
+      node.querySelector('.brick-flow-detail').style.display = 'block';
+    } else if (brick && brick.deps.includes(highlightedBrick)) {
+      node.style.boxShadow = '0 0 0 3px var(--accent-3)';
+      node.querySelector('.brick-flow-detail').style.display = 'block';
+    } else {
+      node.style.boxShadow = '';
+      node.style.opacity = '0.2';
+      node.querySelector('.brick-flow-detail').style.display = 'none';
+    }
+  });
+  // Reset opacity after short delay if deselected
+  if (!highlightedBrick) {
+    document.querySelectorAll('.arch-brick-node').forEach(node => {
+      const b = BRICKS.find(x=>x.id===node.dataset.brick);
+      node.style.opacity = b && b.selected ? '1' : '0.35';
+    });
   }
+}
+
+// ============ RISKS PAGE ============
+let riskState = {};
+let cfState = {};
+try { riskState = JSON.parse(localStorage.getItem('yhack-risks')||'{}'); } catch(e) {}
+try { cfState = JSON.parse(localStorage.getItem('yhack-cf')||'{}'); } catch(e) {}
+function saveRiskState() { localStorage.setItem('yhack-risks', JSON.stringify(riskState)); localStorage.setItem('yhack-cf', JSON.stringify(cfState)); }
+
+function toggleRisk(id) { riskState[id] = !riskState[id]; if(riskState[id]) { const r=RISKS.find(x=>x.id===id); if(r) r.status='mitigated'; } else { const r=RISKS.find(x=>x.id===id); if(r) r.status='open'; } saveRiskState(); saveState(); renderRisks(); renderSidebar(); }
+function toggleCF(id) { cfState[id] = !cfState[id]; saveRiskState(); renderRisks(); }
+
+function getRiskColor(l, i) {
+  if (l==='high'&&i==='high') return 'var(--accent)';
+  if (l==='high'||i==='high') return 'var(--medium)';
+  return '#e0c850';
+}
+
+function renderRisks() {
+  const container = document.getElementById('risksContent');
+  if (!container) return;
+  const mitigated = RISKS.filter(r=>riskState[r.id]).length;
+  const cfChecked = CRITICAL_FEEDBACK.filter(c=>cfState[c.id]).length;
+
+  container.innerHTML = `
+    <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+      <div class="card" style="flex:1;min-width:200px;text-align:center;padding:20px;">
+        <div style="font-size:42px;font-weight:700;color:${mitigated===RISKS.length?'var(--easy)':'var(--accent)'};">${mitigated}/${RISKS.length}</div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);">Risks Mitigated</div>
+      </div>
+      <div class="card" style="flex:1;min-width:200px;text-align:center;padding:20px;">
+        <div style="font-size:42px;font-weight:700;color:${cfChecked===CRITICAL_FEEDBACK.length?'var(--easy)':'var(--accent-2)'};">${cfChecked}/${CRITICAL_FEEDBACK.length}</div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);">Honest Checks Passed</div>
+      </div>
+    </div>
+
+    <div class="section-title">Risk Register</div>
+    <table class="ds-table" style="margin-bottom:28px;">
+      <tr><th style="width:30px;"></th><th>Risk</th><th>L</th><th>I</th><th>Owner</th><th>Mitigation</th></tr>
+      ${RISKS.map(r => {
+        const checked = riskState[r.id];
+        const color = getRiskColor(r.likelihood, r.impact);
+        return `<tr style="background:${checked?'#e8f5e9':'inherit'};opacity:${checked?'.6':'1'};" onclick="toggleRisk('${r.id}')" class="clickable-row">
+          <td style="text-align:center;font-size:16px;cursor:pointer;">${checked?'<span style="color:var(--easy);">&#10003;</span>':'<span style="color:#ccc;">&#9744;</span>'}</td>
+          <td><strong style="${checked?'text-decoration:line-through;':''}">${r.risk}</strong></td>
+          <td><span class="tag" style="background:${r.likelihood==='high'?'var(--accent)':r.likelihood==='medium'?'var(--medium)':'#aaa'};color:#fff;border-color:transparent;font-size:8px;">${r.likelihood.toUpperCase()}</span></td>
+          <td><span class="tag" style="background:${r.impact==='high'?'var(--accent)':r.impact==='medium'?'var(--medium)':'#aaa'};color:#fff;border-color:transparent;font-size:8px;">${r.impact.toUpperCase()}</span></td>
+          <td style="font-size:11px;">${r.owner}</td>
+          <td style="font-size:11px;color:var(--text-dim);">${r.mitigation}</td>
+        </tr>`;
+      }).join('')}
+    </table>
+
+    <div class="section-title">Critical Honest Feedback</div>
+    <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">Answer honestly. Unchecked items are your biggest risks.</p>
+    ${CRITICAL_FEEDBACK.map(c => {
+      const checked = cfState[c.id];
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface);border:2px solid var(--text);border-left:4px solid ${checked?'var(--easy)':'var(--accent)'};margin-bottom:4px;cursor:pointer;" onclick="toggleCF('${c.id}')">
+        <div style="width:22px;height:22px;border:2px solid ${checked?'var(--easy)':'#ccc'};display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--easy);flex-shrink:0;">${checked?'&#10003;':''}</div>
+        <div style="flex:1;font-size:12px;${checked?'color:var(--text-dim);':'font-weight:500;'}">${c.question}</div>
+      </div>`;
+    }).join('')}
+
+    <div class="section-title" style="margin-top:28px;">Kill Decisions (Pre-Committed)</div>
+    <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">Scope cuts agreed in advance. No debate during hackathon.</p>
+    ${KILL_DECISIONS.map(k => `
+      <div style="display:flex;gap:12px;padding:12px 14px;background:var(--surface);border:2px solid var(--text);margin-bottom:4px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:700;min-width:200px;flex-shrink:0;">IF: ${k.trigger}</div>
+        <div style="font-size:11px;"><strong>THEN:</strong> ${k.action}</div>
+      </div>
+    `).join('')}
+  `;
 }
 
 // ============ INIT ============
 function renderAll() {
   renderSidebar(); renderRace(); renderAwards();
-  renderBrainstorm(); renderBricks(); renderMVP(); renderArch(); renderSubmission();
+  renderBrainstorm(); renderBricks(); renderMVP(); renderArch(); renderRisks(); renderSubmission();
 }
 
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeDetail(); });

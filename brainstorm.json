@@ -1,25 +1,30 @@
 {
   "painpoints": [
-    {"id": "pp1", "title": "ER Communication Gap", "desc": "Patients say \"I feel dizzy\" but clinicians need standardized severity, onset, associated symptoms. 15 min wasted per visit.", "who": "Patients + ER nurses", "consumer": "ER patients (all ages), triage nurses, emergency physicians", "market": "130M US ER visits/year. $328B US emergency medicine market. Every hospital has this problem."},
-    {"id": "pp2", "title": "Scattered Health Records", "desc": "Vaccine records in 5 portals. No single source of truth. Switch doctors = start from scratch.", "who": "Everyone", "consumer": "Patients who switch providers, travelers, parents tracking kids' vaccines", "market": "330M Americans with fragmented records. $7.2B health information exchange market."},
-    {"id": "pp3", "title": "Language Barriers in Healthcare", "desc": "Non-English speakers can't describe symptoms accurately. Translators are scarce. Misdiagnosis risk.", "who": "Immigrant patients, international travelers", "consumer": "67M US residents who speak non-English at home, medical tourists, refugees", "market": "67M LEP (Limited English Proficiency) individuals in US. $3.1B medical interpretation market."},
-    {"id": "pp4", "title": "Doctors Re-Asking Questions", "desc": "Nurse asks intake questions, doctor asks the same ones. Patient repeats story 3 times.", "who": "Patients + Clinicians", "consumer": "All patients visiting any clinic or ER, front-desk staff, nurses, doctors", "market": "1B+ annual US outpatient visits. Each redundant intake = 10-15 min wasted clinician time."},
-    {"id": "pp5", "title": "Pet Owners Can't Describe Symptoms", "desc": "Even worse than humans. \"My dog is acting weird\" tells the vet nothing.", "who": "Pet owners", "consumer": "67% of US households (86.9M homes) own a pet. 200M+ vet visits/year.", "market": "$35.9B US veterinary services market. Pet owners spend avg $367/year on vet visits."},
-    {"id": "pp6", "title": "Health Literacy Gap", "desc": "Patients leave the doctor not understanding their diagnosis, medications, or next steps.", "who": "Patients with low health literacy", "consumer": "36% of US adults have basic/below-basic health literacy. Elderly, immigrants, low-income.", "market": "Low health literacy costs US $236B/year in avoidable ER visits and complications."}
+    {"id": "pp1", "title": "Price Opacity", "desc": "Patients cannot get a cost estimate before care. 'How much will this cost?' is unanswerable until the EOB arrives weeks later.", "who": "All insured patients", "consumer": "292M Americans with private or public health insurance attempting to book non-emergency care", "market": "Healthcare is 18% of US GDP ($4.5T). 70% of consumers don't price-shop — not by choice, because they can't."},
+    {"id": "pp2", "title": "Fragmented Provider Search", "desc": "Patients jump across 5+ surfaces to find a provider: insurer directory, Google, Zocdoc, MyChart, review sites. No single starting point.", "who": "Anyone seeking care", "consumer": "Patients trying to find in-network specialists, PCPs, urgent care, or imaging centers", "market": "1B+ annual US outpatient visits. Each search takes 45-90 min across fragmented tools."},
+    {"id": "pp3", "title": "Ghost Networks", "desc": "55%+ of provider directories contain critical errors. Patients book 'in-network,' receive out-of-network bills. 53% of mental health directories are inaccurate.", "who": "Insured patients using directories", "consumer": "Anyone who verified coverage before booking only to be surprised by the bill", "market": "Patients using inaccurate directories are 4x more likely to receive surprise bills."},
+    {"id": "pp4", "title": "Insurance Confusion", "desc": "Patients can't decode their own SBC/plan. Deductible vs. coinsurance vs. copay vs. OOP max — most patients can't define all four correctly.", "who": "Insured patients with employer/marketplace plans", "consumer": "180M Americans with employer-sponsored insurance — most cannot accurately state their own deductible", "market": "42% of patients find cost estimates confusing or hard to understand. SBC has no machine-readable standard."},
+    {"id": "pp5", "title": "No Provenance on Estimates", "desc": "Existing tools show numbers with no source, confidence, or explanation. No tool tags whether a number is a fact, inference, or assumption.", "who": "Any patient using a cost estimator", "consumer": "Growing segment of consumers who want to price-shop but cannot evaluate trustworthiness of estimates", "market": "No existing consumer healthcare tool implements provenance-first estimation. Clearest differentiation gap."},
+    {"id": "pp6", "title": "Post-Visit Surprise Bills", "desc": "True cost revealed only after EOB arrives. Consumer commits — books, travels, receives care — before knowing what they'll owe.", "who": "All insured patients receiving non-cash care", "consumer": "Anyone who has received a bill materially different from what they expected", "market": "Surprise billing is #1 healthcare financial complaint. No Surprises Act (2022) covers some cases but leaves most outpatient ambiguity unresolved."}
   ],
   "hmw": [
-    {"id": "hmw1", "title": "HMW bridge the patient-clinician communication gap?", "linked": "pp1"},
-    {"id": "hmw2", "title": "HMW make health records portable and always up-to-date?", "linked": "pp2"},
-    {"id": "hmw3", "title": "HMW enable multilingual healthcare without human translators?", "linked": "pp3"},
-    {"id": "hmw4", "title": "HMW eliminate repeated intake questioning?", "linked": "pp4"},
-    {"id": "hmw5", "title": "HMW help patients understand their own health?", "linked": "pp6"}
+    {"id": "hmw1", "title": "HMW give patients a trustworthy cost estimate before they commit to care?", "linked": "pp1"},
+    {"id": "hmw2", "title": "HMW become the single starting point for provider search — like Google for healthcare?", "linked": "pp2"},
+    {"id": "hmw3", "title": "HMW surface network status with honest provenance and uncertainty?", "linked": "pp3"},
+    {"id": "hmw4", "title": "HMW help patients understand their own insurance plan in under 2 minutes?", "linked": "pp4"},
+    {"id": "hmw5", "title": "HMW tag every cost number with its source, confidence, and assumptions?", "linked": "pp5"},
+    {"id": "hmw6", "title": "HMW close the loop between pre-visit estimate and post-visit bill?", "linked": "pp6"}
   ],
   "ideas": [
-    {"id": "idea1", "title": "AI Triage Intake on Tablet", "desc": "Visual pain scales + body maps + AI follow-up questions. Generates triage summary for clinician.", "hmw": "hmw1", "impact": "high"},
-    {"id": "idea2", "title": "Multilingual Voice Health Assistant", "desc": "Speak in any language, AI translates to clinical terms and asks structured follow-ups.", "hmw": "hmw3", "impact": "high"},
-    {"id": "idea3", "title": "Personal Health Knowledge Graph", "desc": "Ingest all records, check vaccine status, drug interactions, travel recommendations.", "hmw": "hmw2", "impact": "high"},
-    {"id": "idea4", "title": "Diagnosis Explainer", "desc": "After visit: explain diagnosis in plain language adapted to patient literacy level.", "hmw": "hmw5", "impact": "med"},
-    {"id": "idea5", "title": "Vet Triage Mode", "desc": "Same triage pattern for pet hospitals. Species selector + common pet emergencies.", "hmw": "hmw1", "impact": "med"}
+    {"id": "idea1", "title": "Healthcare Google Flights", "desc": "Symptom in, providers on a map with cost ranges. Compare by price, distance, network status.", "hmw": "hmw2", "impact": "high"},
+    {"id": "idea2", "title": "Provenance-First OOP Estimator", "desc": "Every number tagged: FACT / INFERRED / ASSUMED / USER-PROVIDED. Ranges not point estimates. Shows calculation step by step.", "hmw": "hmw5", "impact": "high"},
+    {"id": "idea3", "title": "Intent-to-Service Mapper", "desc": "User types 'my knee hurts after running.' AI returns: 'likely orthopedic consult, CPT 99213-99215, estimated $X-$Y' with transparent mapping.", "hmw": "hmw1", "impact": "high"},
+    {"id": "idea4", "title": "Insurance Plan Decoder", "desc": "4-question structured flow: deductible, coinsurance, copay, OOP max. Smart defaults. Feeds directly into the estimator.", "hmw": "hmw4", "impact": "med"},
+    {"id": "idea5", "title": "Browser-Assisted Deductible Retrieval", "desc": "Instead of asking users what they've spent, guide them to their insurer portal via Playwright. Extract real deductible remaining.", "hmw": "hmw1", "impact": "high"}
   ],
-  "parked": []
+  "parked": [
+    {"id": "park1", "title": "EOB Explainer", "desc": "Parse EOB documents to compare estimated vs. charged. No machine-readable standard. Post-hackathon."},
+    {"id": "park2", "title": "SBC Document Parser", "desc": "OCR + LLM to extract plan params from PDF SBC. Complex format variance. Use structured user input for MVP."},
+    {"id": "park3", "title": "Raw TiC MRF Parsing", "desc": "100+ TB, streaming JSON, requires cloud infrastructure. Use Turquoise SSP API and DoltHub as proxies."}
+  ]
 }
