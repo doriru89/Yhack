@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareCompare // Bleeding — UC vs ER</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+:root {
+  --bg: #f5f0e8; --surface: #fff; --surface-alt: #ebe6de;
+  --accent: #ff2d2d; --accent-2: #0057ff; --accent-3: #00c853;
+  --text: #111; --text-dim: #777;
+  --mono: 'JetBrains Mono', monospace;
+  --shadow: 4px 4px 0 #111;
+  --uc-color: #00c853; --er-color: #ff2d2d;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--mono);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column;}
+
+/* HEADER */
+.header{background:var(--text);color:var(--bg);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.header h1{font-size:13px;letter-spacing:3px;text-transform:uppercase;}
+.header .tag{font-size:9px;padding:2px 8px;border:1px solid #555;color:#888;letter-spacing:1px;}
+
+/* PROGRESS */
+.progress{display:flex;gap:0;background:var(--surface);border-bottom:3px solid var(--text);}
+.progress-step{flex:1;padding:10px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:center;cursor:pointer;border-right:1px solid var(--surface-alt);color:var(--text-dim);transition:all .15s;}
+.progress-step.active{background:var(--text);color:var(--bg);font-weight:700;}
+.progress-step.done{background:var(--accent-3);color:#fff;}
+.progress-step.clickable:hover{background:var(--surface-alt);}
+
+/* SCREEN */
+.screen{display:none;flex:1;padding:32px;max-width:800px;margin:0 auto;width:100%;animation:fadeIn .3s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.screen-title{font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+.screen-sub{font-size:12px;color:var(--text-dim);margin-bottom:24px;}
+
+/* CARD */
+.card{background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);padding:20px;margin-bottom:16px;}
+
+/* CHAT */
+.chat-bubble{background:var(--surface);border:3px solid var(--text);padding:16px 20px;border-radius:0 16px 16px 16px;max-width:85%;font-size:14px;box-shadow:2px 2px 0 #111;}
+.chat-bubble.user{margin-left:auto;border-radius:16px 0 16px 16px;background:var(--accent-2);color:#fff;border-color:var(--accent-2);}
+.chat-input{display:flex;gap:8px;margin-top:24px;}
+.chat-input input{flex:1;padding:12px 16px;font-family:var(--mono);font-size:13px;border:3px solid var(--text);background:var(--surface);}
+.chat-input button{padding:12px 24px;font-family:var(--mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border:3px solid var(--text);background:var(--text);color:var(--bg);cursor:pointer;}
+.chat-input button:hover{background:var(--accent);border-color:var(--accent);}
+
+/* SAFETY BANNER */
+.safety-banner{background:#fff3cd;border:3px solid var(--accent);padding:12px 16px;font-size:12px;display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.safety-banner::before{content:'!';font-weight:700;font-size:16px;background:var(--accent);color:#fff;min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* PROVENANCE */
+.provenance{font-size:10px;padding:8px 12px;background:var(--surface-alt);border-left:3px solid var(--accent-2);margin-top:12px;color:var(--text-dim);cursor:pointer;transition:all .15s;}
+.provenance:hover{background:#e0dbd3;}
+.provenance-detail{display:none;margin-top:8px;padding-top:8px;border-top:1px solid #ccc;font-size:11px;color:var(--text);}
+.provenance.open .provenance-detail{display:block;}
+.provenance-label{text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:9px;}
+.prov-fact{color:var(--accent-3);font-weight:700;}
+.prov-assumed{color:var(--accent);font-weight:700;}
+.prov-user{color:var(--accent-2);font-weight:700;}
+
+/* FORM */
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:700;}
+.form-group select, .form-group input{width:100%;padding:10px 14px;font-family:var(--mono);font-size:13px;border:3px solid var(--text);background:var(--surface);}
+.form-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.btn{font-family:var(--mono);font-size:11px;padding:10px 20px;border:3px solid var(--text);cursor:pointer;text-transform:uppercase;letter-spacing:1px;font-weight:700;transition:all .1s;}
+.btn-primary{background:var(--text);color:var(--bg);}
+.btn-primary:hover{background:var(--accent);border-color:var(--accent);}
+.btn-secondary{background:var(--surface);}
+.btn-secondary:hover{background:var(--surface-alt);}
+.btn-browser{background:var(--accent-2);color:#fff;border-color:var(--accent-2);}
+.btn-browser:hover{background:#0040cc;}
+.btn-row{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;}
+
+/* COMPARISON */
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.option-card{background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);padding:0;overflow:hidden;transition:all .15s;cursor:pointer;}
+.option-card:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #111;}
+.option-card.selected{border-color:var(--accent-2);box-shadow:4px 4px 0 var(--accent-2);}
+.option-header{padding:14px 16px;font-weight:700;text-transform:uppercase;letter-spacing:2px;font-size:12px;}
+.option-header.uc{background:var(--uc-color);color:#fff;}
+.option-header.er{background:var(--er-color);color:#fff;}
+.option-body{padding:16px;}
+.option-price{font-size:28px;font-weight:700;margin-bottom:4px;}
+.option-price-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.option-detail{font-size:11px;padding:6px 0;border-bottom:1px solid var(--surface-alt);display:flex;justify-content:space-between;}
+.option-detail:last-child{border-bottom:none;}
+
+/* PRICE BAR */
+.price-bar-container{margin:20px 0;padding:16px;background:var(--surface);border:3px solid var(--text);}
+.price-bar-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;justify-content:space-between;}
+.price-bar{height:32px;background:var(--surface-alt);border:2px solid var(--text);position:relative;display:flex;}
+.price-bar .uc-bar{background:var(--uc-color);height:100%;transition:width .8s ease;}
+.price-bar .er-bar{background:var(--er-color);height:100%;transition:width .8s ease;}
+.price-bar .gap{background:repeating-linear-gradient(45deg,transparent,transparent 4px,var(--surface-alt) 4px,var(--surface-alt) 8px);height:100%;flex:1;}
+.savings-callout{text-align:center;margin-top:12px;font-size:16px;font-weight:700;color:var(--uc-color);}
+
+/* PROVIDER LIST */
+.provider-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--surface-alt);font-size:12px;}
+.provider-name{font-weight:700;}
+.provider-dist{color:var(--text-dim);font-size:11px;}
+
+/* ACTION CARD */
+.action-card{background:var(--surface);border:3px solid var(--text);box-shadow:var(--shadow);padding:20px;margin-bottom:16px;}
+.action-card h3{font-size:14px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.action-btns{display:flex;gap:10px;margin-bottom:16px;}
+.action-btn{display:flex;align-items:center;gap:8px;padding:12px 20px;font-family:var(--mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border:3px solid var(--text);cursor:pointer;text-decoration:none;color:var(--text);transition:all .1s;}
+.action-btn.navigate{background:var(--accent-2);color:#fff;border-color:var(--accent-2);}
+.action-btn.call{background:var(--uc-color);color:#fff;border-color:var(--uc-color);}
+.action-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 #111;}
+
+/* CHECKLIST */
+.checklist{list-style:none;padding:0;}
+.checklist li{padding:8px 0;border-bottom:1px solid var(--surface-alt);font-size:12px;display:flex;align-items:flex-start;gap:8px;}
+.checklist li::before{content:'\2610';font-size:16px;flex-shrink:0;}
+
+/* DEDUCTIBLE ANIMATION */
+.deductible-sim{display:none;padding:16px;background:#111;color:#0f0;font-size:11px;border:3px solid var(--accent-2);margin-top:12px;font-family:var(--mono);}
+.deductible-sim.active{display:block;animation:fadeIn .3s;}
+.sim-line{opacity:0;animation:typeLine .3s ease forwards;}
+@keyframes typeLine{to{opacity:1;}}
+
+/* FOOTER NAV */
+.footer-nav{padding:16px 32px;background:var(--surface);border-top:3px solid var(--text);display:flex;justify-content:space-between;align-items:center;}
+
+@media(max-width:640px){
+  .comparison{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  .screen{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>CareCompare</h1>
+  <span class="tag">PLAYGROUND // CATEGORY 4: BLEEDING</span>
+</div>
+
+<div class="progress" id="progress"></div>
+
+<div class="screen active" id="screen-intake">
+  <div class="screen-title">What do you need?</div>
+  <div class="screen-sub">Describe your situation in your own words.</div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="chat-bubble" style="background:var(--surface-alt);border-color:var(--surface-alt);font-size:12px;color:var(--text-dim);">
+      Tell us what's going on. We'll help you figure out where to go and what it might cost.
+    </div>
+    <div class="chat-input">
+      <input type="text" id="userInput" value="I'm bleeding a decent amount, where should I go?" placeholder="Describe your symptoms...">
+      <button onclick="goTo(1)">Send</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-classify">
+  <div class="screen-title">We understand</div>
+  <div class="screen-sub">Here's what we think is going on.</div>
+
+  <div class="safety-banner">
+    If bleeding is severe, won't stop, or you feel dizzy/faint — <strong>call 911 immediately.</strong>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+      <div style="font-size:28px;">&#x1F3E5;</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;">Urgent Care Visit or Emergency Room</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">
+          Based on your description, this sounds like it could be treated at either an <strong>Urgent Care center</strong> or the <strong>Emergency Room</strong>. The right choice depends on severity — and the cost difference is significant.
+        </div>
+      </div>
+    </div>
+
+    <div class="provenance" onclick="this.classList.toggle('open')">
+      <div class="provenance-label">Provenance (click to expand)</div>
+      <div class="provenance-detail">
+        <div style="margin-bottom:6px;"><span class="prov-fact">CLASSIFICATION:</span> AI intent mapping</div>
+        <div style="margin-bottom:6px;"><span class="prov-fact">CONFIDENCE:</span> HIGH — "bleeding" maps to acute care category with 94% confidence</div>
+        <div style="margin-bottom:6px;"><span class="prov-assumed">ASSUMPTION:</span> Non-life-threatening based on description. If severe, ER is recommended regardless of cost.</div>
+        <div><span class="prov-fact">SERVICE CODES:</span> UC visit (HCPCS 99213-99214) vs ER visit (HCPCS 99283)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goTo(2)">Next: Enter Insurance</button>
+    <button class="btn btn-secondary" onclick="goTo(3)">Skip to Compare</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-insurance">
+  <div class="screen-title">Your Insurance</div>
+  <div class="screen-sub">This helps us estimate your out-of-pocket cost. Optional — we can still show ranges without it.</div>
+
+  <div class="card">
+    <div class="form-group">
+      <label>Insurance carrier</label>
+      <select id="insurerSelect" onchange="updatePlanDefaults()">
+        <option value="">-- Select your insurer --</option>
+        <option value="anthem">Anthem BCBS Connecticut</option>
+        <option value="uhc">UnitedHealthcare</option>
+        <option value="yale">Yale Health Plan</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Annual deductible ($)</label>
+        <input type="number" id="deductible" placeholder="e.g. 1500">
+      </div>
+      <div class="form-group">
+        <label>Coinsurance (%)</label>
+        <input type="number" id="coinsurance" placeholder="e.g. 20">
+      </div>
+      <div class="form-group">
+        <label>ER copay ($)</label>
+        <input type="number" id="erCopay" placeholder="e.g. 250">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Deductible remaining ($) <span style="color:var(--text-dim);font-weight:400;">— most people don't know this</span></label>
+      <input type="number" id="deductibleRemaining" placeholder="Leave blank if unsure">
+    </div>
+
+    <button class="btn btn-browser" onclick="simulateDeductibleCheck()" id="deductibleBtn">
+      &#x1F50D; Check My Deductible (Browser Assist Demo)
+    </button>
+
+    <div class="deductible-sim" id="deductibleSim"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goTo(3)">Compare Options</button>
+    <button class="btn btn-secondary" onclick="goTo(3)">Skip — Show Estimates</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-compare">
+  <div class="screen-title">Your Options</div>
+  <div class="screen-sub" id="compareSub">Estimated out-of-pocket costs near New Haven, CT</div>
+
+  <div id="compareMap" style="height:280px;border:3px solid var(--text);box-shadow:var(--shadow);margin-bottom:16px;z-index:0;"></div>
+
+  <div class="comparison" id="comparisonCards"></div>
+
+  <div class="price-bar-container" id="priceBarContainer"></div>
+
+  <div id="providerLists"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="selectOption('uc')">Choose Urgent Care</button>
+    <button class="btn btn-secondary" onclick="selectOption('er')">Choose Emergency Room</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-action">
+  <div class="screen-title">Ready to Go</div>
+  <div class="screen-sub" id="actionSub"></div>
+
+  <div class="action-card" id="selectedProviderCard"></div>
+
+  <div class="card">
+    <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">What to Ask When You Call</h3>
+    <ul class="checklist" id="checklist"></ul>
+  </div>
+
+  <div class="provenance" onclick="this.classList.toggle('open')" style="margin-top:16px;">
+    <div class="provenance-label">Full Estimate Provenance</div>
+    <div class="provenance-detail" id="fullProvenance"></div>
+  </div>
+
+  <div style="margin-top:24px;padding:12px 16px;background:var(--surface-alt);border:2px solid #ccc;font-size:10px;color:var(--text-dim);">
+    <strong>Disclaimer:</strong> This tool shows publicly available pricing data and is not medical advice or insurance guidance. Estimates are not guarantees. Always verify coverage with your insurer and confirm pricing with the provider before receiving care.
+  </div>
+
+  <div class="btn-row" style="margin-top:16px;">
+    <button class="btn btn-secondary" onclick="goTo(0)">Start Over</button>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+const STEPS = ['Intake','Classify','Insurance','Compare','Action'];
+let currentStep = 0;
+let selectedChoice = null;
+
+const UC_PROVIDERS = [
+  {name:'PhysicianOne Urgent Care', address:'136 Elm St, New Haven', phone:'(203) 946-1655', dist:'0.3 mi', lat:41.3083, lng:-72.9279},
+  {name:'DOCS Urgent Care', address:'2 Church St S, New Haven', phone:'(203) 891-2780', dist:'0.5 mi', lat:41.3015, lng:-72.9270},
+  {name:'Yale Health Acute Care', address:'55 Lock St, New Haven', phone:'(203) 432-0123', dist:'0.8 mi', lat:41.3040, lng:-72.9330},
+];
+
+const ER_PROVIDERS = [
+  {name:'Yale-New Haven Hospital ED', address:'20 York St, New Haven', phone:'(203) 688-4242', dist:'0.6 mi', lat:41.3030, lng:-72.9350},
+];
+
+// Base prices (before insurance)
+const PRICES = {
+  uc: {low: 150, high: 350, source:'CMS Procedure Price Lookup + Turquoise SSP', date:'2026-03-15', confidence:'HIGH'},
+  er: {low: 1500, high: 3500, source:'CMS PPL + Yale-New Haven Hospital published MRF', date:'2026-03-01', confidence:'HIGH'},
+  er_physician: {low: 200, high: 600, source:'CMS Medicare Physician Fee Schedule (commercial multiplier applied)', date:'2026-03-15', confidence:'MEDIUM'},
+};
+
+const PLAN_DEFAULTS = {
+  anthem: {deductible:1500, coinsurance:20, erCopay:250, name:'Anthem BCBS CT Silver PPO'},
+  uhc: {deductible:2000, coinsurance:20, erCopay:300, name:'UnitedHealthcare Choice Plus'},
+  yale: {deductible:0, coinsurance:0, erCopay:100, name:'Yale Health Plan'},
+};
+
+// ============ NAVIGATION ============
+function goTo(step) {
+  currentStep = step;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(['screen-intake','screen-classify','screen-insurance','screen-compare','screen-action'][step]).classList.add('active');
+  renderProgress();
+  if (step === 3) renderComparison();
+  if (step === 4) renderAction();
+}
+
+function renderProgress() {
+  document.getElementById('progress').innerHTML = STEPS.map((s,i) => {
+    let cls = 'progress-step';
+    if (i === currentStep) cls += ' active';
+    else if (i < currentStep) cls += ' done clickable';
+    return `<div class="${cls}" onclick="${i < currentStep ? `goTo(${i})` : ''}">${i < currentStep ? '\u2713 ' : ''}${s}</div>`;
+  }).join('');
+}
+
+// ============ INSURANCE ============
+function updatePlanDefaults() {
+  const plan = PLAN_DEFAULTS[document.getElementById('insurerSelect').value];
+  if (!plan) return;
+  document.getElementById('deductible').value = plan.deductible;
+  document.getElementById('coinsurance').value = plan.coinsurance;
+  document.getElementById('erCopay').value = plan.erCopay;
+}
+
+function getPlanInputs() {
+  return {
+    insurer: document.getElementById('insurerSelect').value,
+    deductible: parseFloat(document.getElementById('deductible').value) || null,
+    coinsurance: (parseFloat(document.getElementById('coinsurance').value) || 0) / 100,
+    erCopay: parseFloat(document.getElementById('erCopay').value) || null,
+    deductibleRemaining: parseFloat(document.getElementById('deductibleRemaining').value) || null,
+    planName: PLAN_DEFAULTS[document.getElementById('insurerSelect').value]?.name || 'Unknown Plan',
+  };
+}
+
+function simulateDeductibleCheck() {
+  const sim = document.getElementById('deductibleSim');
+  sim.classList.add('active');
+  sim.innerHTML = '';
+  const lines = [
+    {text:'> Opening Anthem BCBS CT member portal...', delay:0},
+    {text:'> Waiting for user authentication...', delay:800},
+    {text:'> Authenticated. Navigating to Benefits Summary...', delay:2000},
+    {text:'> Reading deductible tracker...', delay:3200},
+    {text:'> Found: Individual Deductible = $1,500', delay:4200},
+    {text:'> Found: Amount Applied = $847.23', delay:4800},
+    {text:'> Deductible Remaining: $652.77', delay:5400},
+    {text:'> OOP Max Remaining: $4,152.77', delay:5800},
+    {text:'> Done. Feeding real data into estimate...', delay:6400},
+  ];
+  lines.forEach((line, i) => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'sim-line';
+      div.style.animationDelay = '0s';
+      div.textContent = line.text;
+      if (line.text.includes('$652.77')) div.style.color = '#ff0';
+      sim.appendChild(div);
+      sim.scrollTop = sim.scrollHeight;
+    }, line.delay);
+  });
+  setTimeout(() => {
+    document.getElementById('deductibleRemaining').value = '652.77';
+    document.getElementById('deductibleBtn').textContent = '\u2713 Deductible Retrieved: $652.77 remaining';
+    document.getElementById('deductibleBtn').style.background = 'var(--accent-3)';
+    document.getElementById('deductibleBtn').style.borderColor = 'var(--accent-3)';
+  }, 7000);
+}
+
+// ============ OOP CALCULATION ============
+function calcOOP(allowedLow, allowedHigh, plan, isER) {
+  if (!plan.deductible && plan.deductible !== 0) {
+    return {low: allowedLow, high: allowedHigh, method:'No insurance info — showing full allowed amount range', assumptions:['No plan data provided']};
+  }
+
+  const assumptions = [];
+  let low, high;
+
+  if (isER && plan.erCopay) {
+    // ER with copay: copay + facility coinsurance (simplified)
+    low = plan.erCopay;
+    high = plan.erCopay + (allowedHigh * plan.coinsurance);
+    assumptions.push(`ER copay: $${plan.erCopay} (from your plan)`);
+    if (plan.coinsurance > 0) assumptions.push(`Plus ${plan.coinsurance*100}% coinsurance on facility fee`);
+  } else if (plan.deductibleRemaining !== null) {
+    // Known deductible remaining
+    const dedAppliedLow = Math.min(allowedLow, plan.deductibleRemaining);
+    const dedAppliedHigh = Math.min(allowedHigh, plan.deductibleRemaining);
+    const afterDedLow = Math.max(0, allowedLow - plan.deductibleRemaining);
+    const afterDedHigh = Math.max(0, allowedHigh - plan.deductibleRemaining);
+    low = dedAppliedLow + (afterDedLow * plan.coinsurance);
+    high = dedAppliedHigh + (afterDedHigh * plan.coinsurance);
+    assumptions.push(`Deductible remaining: $${plan.deductibleRemaining.toFixed(2)} (browser-verified)`);
+    assumptions.push(`Coinsurance: ${plan.coinsurance*100}% after deductible`);
+  } else {
+    // Unknown deductible — show two scenarios
+    const scenarioMet = {low: allowedLow * plan.coinsurance, high: allowedHigh * plan.coinsurance};
+    const scenarioNotMet = {low: Math.min(allowedLow, plan.deductible), high: Math.min(allowedHigh, plan.deductible)};
+    low = scenarioMet.low;
+    high = scenarioNotMet.high;
+    assumptions.push(`If deductible MET: $${scenarioMet.low.toFixed(0)}-$${scenarioMet.high.toFixed(0)}`);
+    assumptions.push(`If deductible NOT met: $${scenarioNotMet.low.toFixed(0)}-$${scenarioNotMet.high.toFixed(0)}`);
+    assumptions.push('Deductible status unknown — showing combined range');
+  }
+
+  return {low: Math.round(low), high: Math.round(high), assumptions,
+    method: plan.deductibleRemaining !== null ? 'Personalized (browser-verified deductible)' : plan.deductible !== null ? 'Plan-based estimate (deductible status unknown)' : 'Benchmark range'};
+}
+
+// ============ COMPARISON ============
+function renderComparison() {
+  const plan = getPlanInputs();
+  const ucOOP = calcOOP(PRICES.uc.low, PRICES.uc.high, plan, false);
+  const erOOP = calcOOP(PRICES.er.low, PRICES.er.high, plan, true);
+
+  const subtitle = plan.insurer ? `Estimates for ${plan.planName} near New Haven, CT` : 'Estimated out-of-pocket costs near New Haven, CT';
+  document.getElementById('compareSub').textContent = subtitle;
+
+  document.getElementById('comparisonCards').innerHTML = `
+    <div class="option-card" id="ucCard" onclick="selectOption('uc')">
+      <div class="option-header uc">Urgent Care</div>
+      <div class="option-body">
+        <div class="option-price" style="color:var(--uc-color);">$${ucOOP.low} - $${ucOOP.high}</div>
+        <div class="option-price-label">Estimated out-of-pocket</div>
+        <div class="option-detail"><span>Typical wait</span><span>~30 min</span></div>
+        <div class="option-detail"><span>Hours</span><span>8am - 8pm</span></div>
+        <div class="option-detail"><span>Locations nearby</span><span>${UC_PROVIDERS.length}</span></div>
+        <div class="option-detail"><span>Setting</span><span>Outpatient clinic</span></div>
+        <div class="provenance" onclick="event.stopPropagation();this.classList.toggle('open')">
+          <div class="provenance-label">Source + Confidence</div>
+          <div class="provenance-detail">
+            <div><span class="prov-fact">PRICE SOURCE:</span> ${PRICES.uc.source}</div>
+            <div><span class="prov-fact">DATA DATE:</span> ${PRICES.uc.date}</div>
+            <div><span class="prov-fact">CONFIDENCE:</span> ${PRICES.uc.confidence}</div>
+            <div style="margin-top:6px;"><span class="prov-assumed">METHOD:</span> ${ucOOP.method}</div>
+            ${ucOOP.assumptions.map(a => `<div><span class="prov-${a.includes('browser') ? 'user' : 'assumed'}">ASSUMPTION:</span> ${a}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="option-card" id="erCard" onclick="selectOption('er')">
+      <div class="option-header er">Emergency Room</div>
+      <div class="option-body">
+        <div class="option-price" style="color:var(--er-color);">$${erOOP.low} - $${erOOP.high}</div>
+        <div class="option-price-label">Estimated out-of-pocket</div>
+        <div class="option-detail"><span>Typical wait</span><span>2 - 4 hours</span></div>
+        <div class="option-detail"><span>Hours</span><span>24/7</span></div>
+        <div class="option-detail"><span>Locations nearby</span><span>${ER_PROVIDERS.length}</span></div>
+        <div class="option-detail"><span>Setting</span><span>Hospital (facility + physician fees)</span></div>
+        <div class="provenance" onclick="event.stopPropagation();this.classList.toggle('open')">
+          <div class="provenance-label">Source + Confidence</div>
+          <div class="provenance-detail">
+            <div><span class="prov-fact">FACILITY PRICE:</span> ${PRICES.er.source}</div>
+            <div><span class="prov-fact">PHYSICIAN FEE:</span> ${PRICES.er_physician.source}</div>
+            <div><span class="prov-fact">DATA DATE:</span> ${PRICES.er.date}</div>
+            <div><span class="prov-fact">CONFIDENCE:</span> ${PRICES.er.confidence} (facility), ${PRICES.er_physician.confidence} (physician)</div>
+            <div style="margin-top:6px;"><span class="prov-assumed">NOTE:</span> ER visits generate 2+ separate bills (facility fee + physician fee). This estimate combines both.</div>
+            <div><span class="prov-assumed">METHOD:</span> ${erOOP.method}</div>
+            ${erOOP.assumptions.map(a => `<div><span class="prov-${a.includes('browser') ? 'user' : 'assumed'}">ASSUMPTION:</span> ${a}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Price bar
+  const maxPrice = Math.max(PRICES.er.high, PRICES.uc.high);
+  const ucPct = (PRICES.uc.high / maxPrice) * 100;
+  const erPct = (PRICES.er.high / maxPrice) * 100;
+  const savings = erOOP.low - ucOOP.high;
+
+  document.getElementById('priceBarContainer').innerHTML = `
+    <div class="price-bar-label"><span style="color:var(--uc-color);font-weight:700;">UC: $${ucOOP.low}-$${ucOOP.high}</span><span style="color:var(--er-color);font-weight:700;">ER: $${erOOP.low}-$${erOOP.high}</span></div>
+    <div style="display:grid;grid-template-columns:1fr;gap:6px;">
+      <div class="price-bar"><div class="uc-bar" style="width:${ucPct}%;"></div></div>
+      <div class="price-bar"><div class="er-bar" style="width:${erPct}%;"></div></div>
+    </div>
+    ${savings > 0 ? `<div class="savings-callout">Urgent care saves ~$${savings.toLocaleString()}+</div>` : ''}
+    <div style="font-size:10px;color:var(--text-dim);margin-top:8px;text-align:center;">For non-life-threatening bleeding, urgent care provides equivalent treatment at a fraction of the cost.</div>
+  `;
+
+  // Provider lists
+  document.getElementById('providerLists').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div class="card" style="padding:0;">
+        <div style="padding:10px 14px;background:var(--uc-color);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Nearby Urgent Care</div>
+        ${UC_PROVIDERS.map(p => `<div class="provider-item"><div><div class="provider-name">${p.name}</div><div class="provider-dist">${p.address}</div></div><div style="text-align:right;"><div style="font-weight:700;">${p.dist}</div><div style="font-size:10px;color:var(--text-dim);">${p.phone}</div></div></div>`).join('')}
+      </div>
+      <div class="card" style="padding:0;">
+        <div style="padding:10px 14px;background:var(--er-color);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Emergency Room</div>
+        ${ER_PROVIDERS.map(p => `<div class="provider-item"><div><div class="provider-name">${p.name}</div><div class="provider-dist">${p.address}</div></div><div style="text-align:right;"><div style="font-weight:700;">${p.dist}</div><div style="font-size:10px;color:var(--text-dim);">${p.phone}</div></div></div>`).join('')}
+      </div>
+    </div>
+  `;
+
+  // Render map
+  renderCompareMap(ucOOP, erOOP);
+}
+
+let compareMap = null;
+function renderCompareMap(ucOOP, erOOP) {
+  const mapEl = document.getElementById('compareMap');
+  if (!mapEl) return;
+  if (compareMap) { compareMap.remove(); compareMap = null; }
+
+  compareMap = L.map('compareMap').setView([41.3050, -72.9280], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
+  }).addTo(compareMap);
+
+  // UC markers (green)
+  const ucIcon = L.divIcon({className:'', html:`<div style="width:28px;height:28px;background:#00c853;border:3px solid #111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;box-shadow:2px 2px 4px rgba(0,0,0,.3);">UC</div>`, iconSize:[28,28], iconAnchor:[14,14]});
+  UC_PROVIDERS.forEach(p => {
+    L.marker([p.lat, p.lng], {icon: ucIcon}).addTo(compareMap)
+      .bindPopup(`<div style="font-family:monospace;font-size:12px;"><strong>${p.name}</strong><br>${p.address}<br><span style="color:#00c853;font-weight:700;">$${ucOOP.low}-$${ucOOP.high} est.</span><br>${p.phone}<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+' '+p.address)}" target="_blank">Navigate &rarr;</a></div>`);
+  });
+
+  // ER markers (red)
+  const erIcon = L.divIcon({className:'', html:`<div style="width:32px;height:32px;background:#ff2d2d;border:3px solid #111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;box-shadow:2px 2px 4px rgba(0,0,0,.3);">ER</div>`, iconSize:[32,32], iconAnchor:[16,16]});
+  ER_PROVIDERS.forEach(p => {
+    L.marker([p.lat, p.lng], {icon: erIcon}).addTo(compareMap)
+      .bindPopup(`<div style="font-family:monospace;font-size:12px;"><strong>${p.name}</strong><br>${p.address}<br><span style="color:#ff2d2d;font-weight:700;">$${erOOP.low}-$${erOOP.high} est.</span><br>${p.phone}<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+' '+p.address)}" target="_blank">Navigate &rarr;</a></div>`);
+  });
+
+  // Fit bounds
+  const allCoords = [...UC_PROVIDERS, ...ER_PROVIDERS].map(p => [p.lat, p.lng]);
+  compareMap.fitBounds(allCoords, {padding: [30, 30]});
+}
+
+// ============ ACTION ============
+function selectOption(choice) {
+  selectedChoice = choice;
+  goTo(4);
+}
+
+function renderAction() {
+  const providers = selectedChoice === 'uc' ? UC_PROVIDERS : ER_PROVIDERS;
+  const provider = providers[0];
+  const plan = getPlanInputs();
+  const prices = selectedChoice === 'uc' ? PRICES.uc : PRICES.er;
+  const oop = calcOOP(prices.low, prices.high, plan, selectedChoice === 'er');
+  const label = selectedChoice === 'uc' ? 'Urgent Care' : 'Emergency Room';
+  const color = selectedChoice === 'uc' ? 'var(--uc-color)' : 'var(--er-color)';
+
+  document.getElementById('actionSub').textContent = `You chose: ${label}`;
+
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(provider.name + ' ' + provider.address)}`;
+  const phoneUrl = `tel:${provider.phone.replace(/[^0-9+]/g, '')}`;
+
+  document.getElementById('selectedProviderCard').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <div>
+        <h3 style="font-size:16px;">${provider.name}</h3>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">${provider.address}</div>
+        <div style="font-size:12px;color:var(--text-dim);">${provider.phone} | ${provider.dist} away</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:24px;font-weight:700;color:${color};">$${oop.low} - $${oop.high}</div>
+        <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Est. out-of-pocket</div>
+      </div>
+    </div>
+    <div class="action-btns">
+      <a href="${mapsUrl}" target="_blank" class="action-btn navigate">&#x1F4CD; Navigate</a>
+      <a href="${phoneUrl}" class="action-btn call">&#x1F4DE; Call</a>
+    </div>
+  `;
+
+  const planName = plan.planName || 'your insurance plan';
+  document.getElementById('checklist').innerHTML = `
+    <li>"Is this location in-network with <strong>${planName}</strong>?"</li>
+    <li>"What is the estimated cost for an ${label.toLowerCase()} visit for bleeding?"</li>
+    <li>"Are there any additional fees I should know about (facility fee, lab work, supplies)?"</li>
+    <li>"How long is the current wait time?"</li>
+    <li>"Do I need to bring anything besides my insurance card and ID?"</li>
+  `;
+
+  document.getElementById('fullProvenance').innerHTML = `
+    <div style="margin-bottom:8px;font-weight:700;">Estimate Breakdown</div>
+    <div><span class="prov-fact">ALLOWED AMOUNT RANGE:</span> $${prices.low} - $${prices.high}</div>
+    <div><span class="prov-fact">SOURCE:</span> ${prices.source}</div>
+    <div><span class="prov-fact">DATA DATE:</span> ${prices.date}</div>
+    <div><span class="prov-fact">CONFIDENCE:</span> ${prices.confidence}</div>
+    <div style="margin-top:8px;"><span class="prov-assumed">CALCULATION METHOD:</span> ${oop.method}</div>
+    ${oop.assumptions.map(a => `<div><span class="prov-${a.includes('browser') ? 'user' : 'assumed'}">${a.includes('browser') ? 'VERIFIED' : 'ASSUMPTION'}:</span> ${a}</div>`).join('')}
+    ${plan.insurer ? `<div style="margin-top:8px;"><span class="prov-user">PLAN:</span> ${planName}</div>` : '<div style="margin-top:8px;"><span class="prov-assumed">PLAN:</span> No insurance data provided — showing full allowed amount range</div>'}
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #ccc;font-size:10px;color:var(--text-dim);">
+      This estimate is based on publicly available pricing data and the plan information you provided. Actual costs may vary. Always verify with your provider and insurer before receiving care.
+    </div>
+  `;
+}
+
+// ============ INIT ============
+renderProgress();
+</script>
+</body>
+</html>

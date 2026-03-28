@@ -27,6 +27,15 @@ def index():
     return send_file(HTML_FILE)
 
 
+@app.route("/playground/<path:filename>")
+def playground(filename):
+    playground_dir = DATA_DIR / "playground"
+    file_path = playground_dir / filename
+    if file_path.exists() and file_path.is_relative_to(playground_dir):
+        return send_file(file_path)
+    return "Not found", 404
+
+
 @app.route("/api/brain", methods=["GET"])
 def get_brain():
     data = json.loads(BRAIN_FILE.read_text())
