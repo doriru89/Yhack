@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YHack Healthcare Data Explorer — Boston GI</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d; --surface3: #30363d;
+    --text: #e6edf3; --text2: #8b949e; --text3: #6e7681;
+    --accent: #58a6ff; --accent2: #3fb950; --accent3: #d29922; --accent4: #f85149;
+    --teal: #39d2c0; --purple: #bc8cff;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header { padding: 20px 32px; border-bottom: 1px solid var(--surface3); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .badge { font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; display: inline-block; }
+  .badge.blue { background: var(--accent); color: var(--bg); }
+  .badge.green { background: var(--accent2); color: var(--bg); }
+  .badge.yellow { background: var(--accent3); color: var(--bg); }
+  .header .sub { color: var(--text2); font-size: 13px; margin-left: auto; }
+  .tabs { display: flex; border-bottom: 1px solid var(--surface3); padding: 0 24px; overflow-x: auto; }
+  .tab { padding: 12px 20px; font-size: 13px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s; font-weight: 500; }
+  .tab:hover { color: var(--text); background: var(--surface); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .ct { background: var(--surface2); padding: 1px 6px; border-radius: 8px; font-size: 11px; margin-left: 6px; }
+  .tab.active .ct { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .content { display: none; padding: 24px 32px; max-width: 1440px; }
+  .content.active { display: block; }
+  .card { background: var(--surface); border: 1px solid var(--surface3); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .card h3 { font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card p, .card li { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .card ul { padding-left: 16px; }
+  .src { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+  .src.rest { background: rgba(63,185,80,0.12); color: var(--accent2); }
+  .src.browser { background: rgba(188,140,255,0.12); color: var(--purple); }
+  .src.file { background: rgba(210,153,34,0.12); color: var(--accent3); }
+  .src.law { background: rgba(88,166,255,0.12); color: var(--accent); }
+  .conf-bar { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 6px 0; }
+  .conf-track { width: 80px; height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 3px; }
+  .conf-fill.h { background: var(--accent2); } .conf-fill.m { background: var(--accent3); } .conf-fill.l { background: var(--accent4); }
+  table.dt { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .dt th { text-align: left; padding: 8px 12px; background: var(--surface2); color: var(--text2); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  .dt td { padding: 8px 12px; border-top: 1px solid var(--surface3); }
+  .dt tr:hover td { background: rgba(88,166,255,0.04); }
+  .price { color: var(--accent2); font-family: var(--mono); font-weight: 500; }
+  .dim { color: var(--text3); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  @media (max-width: 1000px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } }
+  .prov { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-right: 4px; }
+  .prov.fact { background: rgba(63,185,80,0.15); color: var(--accent2); }
+  .prov.inf { background: rgba(210,153,34,0.15); color: var(--accent3); }
+  .prov.assum { background: rgba(248,81,73,0.15); color: var(--accent4); }
+  .compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch; }
+  .compare-side { padding: 20px; }
+  .compare-side.left { background: rgba(63,185,80,0.05); border-radius: 8px 0 0 8px; border: 1px solid rgba(63,185,80,0.15); }
+  .compare-side.right { background: rgba(248,81,73,0.05); border-radius: 0 8px 8px 0; border: 1px solid rgba(248,81,73,0.15); }
+  .compare-vs { padding: 20px 16px; display: flex; align-items: center; font-size: 14px; font-weight: 700; color: var(--text3); }
+  .big-price { font-size: 28px; font-weight: 700; font-family: var(--mono); margin: 8px 0; }
+  .big-price.green { color: var(--accent2); } .big-price.red { color: var(--accent4); }
+  .stat { text-align: center; padding: 16px; }
+  .stat .num { font-size: 32px; font-weight: 700; font-family: var(--mono); }
+  .stat .label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+  .mx { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mx th,.mx td { padding: 6px 10px; border: 1px solid var(--surface3); text-align: center; }
+  .mx th { background: var(--surface2); font-weight: 500; }
+  .mx .y { color: var(--accent2); font-weight: 600; } .mx .n { color: var(--text3); } .mx .p { color: var(--accent3); }
+  .info { background: rgba(88,166,255,0.06); border: 1px solid rgba(88,166,255,0.15); border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .info strong { color: var(--accent); }
+  .warn { background: rgba(210,153,34,0.06); border: 1px solid rgba(210,153,34,0.15); border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .warn strong { color: var(--accent3); }
+  .gap { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 3px; background: rgba(248,81,73,0.1); color: var(--accent4); margin: 2px; }
+  .sh { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--surface3); }
+  .sh:first-child { margin-top: 0; }
+  .chip { padding: 4px 12px; border-radius: 14px; font-size: 12px; cursor: pointer; border: 1px solid var(--surface3); color: var(--text2); transition: all .15s; display: inline-block; }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.on { background: rgba(88,166,255,0.12); border-color: var(--accent); color: var(--accent); }
+  .chips { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .prompt-box { background: var(--surface); border: 1px solid var(--surface3); border-radius: 8px; padding: 16px; margin-top: 20px; position: relative; }
+  .prompt-box .pl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+  .prompt-box .pt { font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+  .copy-btn { position: absolute; top: 12px; right: 12px; background: var(--accent); color: var(--bg); border: none; padding: 5px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .copy-btn:hover { opacity: .85; } .copy-btn.ok { background: var(--accent2); }
+  .qb { background: var(--surface2); border-radius: 8px; padding: 16px; margin: 12px 0; }
+  .qb label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+  .qb select,.qb input { background: var(--surface); border: 1px solid var(--surface3); color: var(--text); padding: 6px 10px; border-radius: 4px; font-size: 13px; font-family: var(--font); width: 100%; }
+  .qb select:focus,.qb input:focus { outline: none; border-color: var(--accent); }
+  .qrow { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; margin-bottom: 8px; }
+  .qout { font-family: var(--mono); font-size: 12px; color: var(--teal); background: var(--bg); padding: 10px 14px; border-radius: 6px; margin-top: 10px; white-space: pre-wrap; word-break: break-all; }
+  .formula { font-family: var(--mono); font-size: 13px; background: var(--surface2); padding: 16px; border-radius: 6px; line-height: 1.8; margin: 12px 0; }
+  .formula .kw { color: var(--accent); } .formula .val { color: var(--accent2); } .formula .op { color: var(--accent3); }
+  .bar { height: 8px; border-radius: 4px; position: relative; margin: 8px 0; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); }
+  .hosp-badge { font-size: 10px; padding: 2px 6px; border-radius: 3px; display: inline-block; }
+  .hosp-badge.mgh { background: rgba(88,166,255,0.1); color: var(--accent); }
+  .hosp-badge.bwh { background: rgba(188,140,255,0.1); color: var(--purple); }
+  .hosp-badge.bidmc { background: rgba(57,210,192,0.1); color: var(--teal); }
+  .hosp-badge.bmc { background: rgba(210,153,34,0.1); color: var(--accent3); }
+  .hosp-badge.tufts { background: rgba(63,185,80,0.1); color: var(--accent2); }
+  .hosp-badge.other { background: rgba(139,148,158,0.1); color: var(--text2); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  .calc-step { display: grid; grid-template-columns: 24px 1fr; gap: 8px; margin: 8px 0; }
+  .calc-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface3); color: var(--text); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .calc-body { font-size: 13px; }
+  .calc-body .hl { color: var(--accent); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Healthcare Data Explorer</h1>
+  <span class="badge blue">YHack 2026</span>
+  <span class="badge green">Boston</span>
+  <span class="badge yellow">GI / Colonoscopy</span>
+  <span class="sub">BCBS MA &bull; 121 providers &bull; 6 CPT codes</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="overview">Project</div>
+  <div class="tab" data-tab="providers">Providers <span class="ct">121</span></div>
+  <div class="tab" data-tab="pricing">Pricing <span class="ct">3 sources</span></div>
+  <div class="tab" data-tab="calc">Calculation <span class="ct">OOP</span></div>
+  <div class="tab" data-tab="sources">Sources <span class="ct">7</span></div>
+  <div class="tab" data-tab="matrix">Data Matrix</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 0: PROJECT OVERVIEW                      -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content active" id="tab-overview">
+  <div class="info">
+    <strong>Provenance-First Healthcare Shopping Assistant</strong> &mdash; "I'm 45 and need a colonoscopy in Boston &mdash; where and how much?" Every price carries its source, confidence, legal mandate, and whether it's fact, inference, or assumption. This playground lets you explore every data source powering the demo.
+  </div>
+
+  <div class="grid-4">
+    <div class="stat card"><div class="num" style="color:var(--accent)">121</div><div class="label">GI Providers</div></div>
+    <div class="stat card"><div class="num" style="color:var(--accent2)">6</div><div class="label">Target CPTs</div></div>
+    <div class="stat card"><div class="num" style="color:var(--accent3)">13.7x</div><div class="label">Price Variance</div></div>
+    <div class="stat card"><div class="num" style="color:var(--purple)">7</div><div class="label">Data Sources</div></div>
+  </div>
+
+  <div class="sh">Final Decisions</div>
+  <table class="dt">
+    <tbody>
+      <tr><td style="width:180px;color:var(--text2)">City</td><td><strong>Boston</strong> (city proper, not suburbs)</td></tr>
+      <tr><td style="color:var(--text2)">ZIP Codes</td><td><code style="color:var(--teal)">02114, 02215, 02115, 02111, 02118, 02130, 02129</code></td></tr>
+      <tr><td style="color:var(--text2)">Specialty</td><td><strong>Gastroenterology</strong> (taxonomy: <code style="color:var(--teal)">207RG0100X</code>)</td></tr>
+      <tr><td style="color:var(--text2)">Insurer</td><td><strong>Blue Cross Blue Shield of Massachusetts</strong> (largest MA market share)</td></tr>
+      <tr><td style="color:var(--text2)">Hero Scenario</td><td style="color:var(--accent2)">"I'm 45 and need a colonoscopy in Boston &mdash; where and how much?"</td></tr>
+      <tr><td style="color:var(--text2)">Database</td><td>MongoDB (4 collections: providers, procedures, prices, insurers)</td></tr>
+      <tr><td style="color:var(--text2)">Data Strategy</td><td>Legally mandated insurer MRF files as source of truth</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sh">Target CPT Codes</div>
+  <div class="grid-2" id="cpt-cards"></div>
+
+  <div class="sh">Provider Distribution by Hospital</div>
+  <div id="hosp-bars"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 1: PROVIDERS                             -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content" id="tab-providers">
+  <div class="info">
+    <strong>NPPES NPI Registry</strong> &mdash; 121 gastroenterologists in Boston proper. Federal source of truth for provider identity. <strong>Hospital affiliation is NOT in the API data</strong> &mdash; we resolved it by matching addresses to known hospital locations.
+  </div>
+
+  <div class="chips" id="hosp-filter"></div>
+
+  <div class="conf-bar">
+    <span style="font-size:12px;color:var(--text2)">Confidence:</span>
+    <div class="conf-track"><div class="conf-fill h" style="width:90%"></div></div>
+    <span style="font-size:12px">0.9 &mdash; Authoritative federal registry, monthly updates</span>
+  </div>
+
+  <table class="dt">
+    <thead><tr><th>Name</th><th>Credential</th><th>Hospital</th><th>ZIP</th><th>Phone</th></tr></thead>
+    <tbody id="prov-tbody"></tbody>
+  </table>
+
+  <div class="qb" style="margin-top:16px">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:500">NPPES API Query</div>
+    <div class="qout">GET https://npiregistry.cms.hhs.gov/api/?version=2.1&city=Boston&state=MA&taxonomy_description=Gastroenterology&limit=200</div>
+  </div>
+
+  <div class="prompt-box">
+    <div class="pl">Prompt Output</div>
+    <button class="copy-btn" onclick="copyP('prov-prompt')">Copy</button>
+    <div class="pt" id="prov-prompt">121 gastroenterologists in Boston proper from NPPES (0.9 confidence, monthly CMS updates). Distribution: MGH 37, BWH 19, BIDMC 19, BMC 11, BWH Faulkner 9, Tufts 8, Atrius 6, VA 2, Others 10. Hospital affiliation resolved by address matching (not in API). All within ZIP codes 02114/02215/02115/02111/02118/02130/02129.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 2: PRICING                               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content" id="tab-pricing">
+  <div class="info">
+    <strong>Three validated pricing sources</strong> for Boston GI: <strong>Turquoise</strong> (cash prices, 31 colonoscopy facilities, $580&ndash;$7,966), <strong>DoltHub</strong> (Carney Hospital negotiated rates, 53 payers), and <strong>FAIR Health</strong> (80th percentile benchmarks). BCBS MA MRF data is the gap to fill &mdash; multi-GB file needs parsing.
+  </div>
+
+  <div class="chips">
+    <div class="chip on" onclick="filterPrice('all')">All</div>
+    <div class="chip" onclick="filterPrice('turquoise')">Turquoise (Cash)</div>
+    <div class="chip" onclick="filterPrice('dolthub')">DoltHub (Negotiated)</div>
+    <div class="chip" onclick="filterPrice('fairhealth')">FAIR Health (Benchmark)</div>
+  </div>
+
+  <div class="price-sec" data-src="turquoise">
+    <div class="sh">Turquoise Health: Colonoscopy Cash Prices (50mi from Boston)</div>
+    <div class="card">
+      <h3><span class="src browser">BROWSER</span> Colonoscopy (SSP GA002) <span style="font-size:11px;color:var(--text3);font-weight:400">| 31 facilities</span></h3>
+      <div class="conf-bar">
+        <div class="conf-track"><div class="conf-fill h" style="width:80%"></div></div>
+        <span style="font-size:12px">0.8 &mdash; Dual-verified (provider + insurer)</span>
+      </div>
+      <div style="font-size:14px;margin:8px 0">Cash range: <strong style="font-family:var(--mono);color:var(--accent2)">$580 &mdash; $7,966</strong> &bull; 13.7x variance &bull; Midpoint: <strong style="font-family:var(--mono)">$2,295</strong></div>
+      <div class="warn"><strong>Key insight:</strong> The 13.7x price spread IS the product opportunity. A patient choosing the cheapest vs most expensive facility pays $7,386 more for the same procedure. Turquoise SSP bundles include facility + professional fees.</div>
+      <p><span class="prov fact">FACT</span> Source: Hospital price transparency filings (45 CFR 180). Cash/self-pay prices only. SSP bundles, not raw CPT. No office visit (E&M) data.</p>
+    </div>
+  </div>
+
+  <div class="price-sec" data-src="dolthub">
+    <div class="sh">DoltHub: Carney Hospital Negotiated Rates (Boston)</div>
+    <div class="warn"><strong>Reliability warning:</strong> DoltHub API has 30s timeout. GI-specific CPTs (45378, 45380, 43239) ALL timed out. Office visit codes (99213, 99203) worked. Data is 2024-vintage, collection halted. <strong>Strategy: Use as cached static data, not live queries.</strong></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3><span class="src rest">CACHED</span> CPT 99213 &mdash; Office Visit</h3>
+        <p style="margin-bottom:8px">Carney Hospital (220017) &bull; Gross: <strong style="font-family:var(--mono)">$144.21</strong> &bull; Cash: <strong style="font-family:var(--mono)">$11.54</strong></p>
+        <table class="dt">
+          <thead><tr><th>Payer</th><th>Rate</th></tr></thead>
+          <tbody id="dolt-99213"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3><span class="src rest">CACHED</span> CPT 99203 &mdash; New Patient</h3>
+        <p style="margin-bottom:8px">Carney Hospital (220017) &bull; Gross: <strong style="font-family:var(--mono)">$203.80</strong></p>
+        <table class="dt">
+          <thead><tr><th>Payer</th><th>Rate</th></tr></thead>
+          <tbody id="dolt-99203"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="price-sec" data-src="fairhealth">
+    <div class="sh">FAIR Health: Regional Benchmarks (New Haven 06510 &mdash; Boston ~10-20% higher)</div>
+    <div class="warn"><strong>Gap:</strong> These benchmarks are for New Haven CT (ZIP 06510). Boston (02114) typically runs 10-20% higher. Need Playwright to capture Boston-specific data from fairhealthconsumer.org.</div>
+    <div class="grid-3" id="fh-cards"></div>
+  </div>
+
+  <div class="prompt-box">
+    <div class="pl">Prompt Output</div>
+    <button class="copy-btn" onclick="copyP('price-prompt')">Copy</button>
+    <div class="pt" id="price-prompt"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 3: CALCULATION                           -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content" id="tab-calc">
+  <div class="info">
+    <strong>OOP Calculation Engine</strong> &mdash; how we estimate what a patient actually pays. The math is deterministic (rules-based, not AI). The hard part is getting accurate inputs, not computing the output. Two paths: insured (BCBS MA) and cash/self-pay.
+  </div>
+
+  <div class="sh">Path 1: Insured (BCBS MA)</div>
+  <div class="formula">
+<span class="kw">OOP</span> <span class="op">=</span> <span class="kw">min</span>(
+    <span class="val">deductible_remaining</span> <span class="op">+</span> (<span class="val">allowed_amount</span> <span class="op">-</span> <span class="val">deductible_remaining</span>) <span class="op">×</span> <span class="val">coinsurance_rate</span>,
+    <span class="val">oop_max_remaining</span>
+)
+  </div>
+
+  <div class="card">
+    <h3>Interactive Calculator</h3>
+    <div class="qb" style="background:var(--bg)">
+      <div class="qrow">
+        <div><label>Allowed Amount ($)</label><input type="number" id="calc-allowed" value="1500" oninput="recalc()"></div>
+        <div><label>Deductible Remaining ($)</label><input type="number" id="calc-deduct" value="500" oninput="recalc()"></div>
+        <div><label>Coinsurance (%)</label><input type="number" id="calc-coins" value="20" min="0" max="100" oninput="recalc()"></div>
+        <div><label>OOP Max Remaining ($)</label><input type="number" id="calc-oop" value="3000" oninput="recalc()"></div>
+      </div>
+    </div>
+    <div id="calc-steps"></div>
+    <div id="calc-result" style="font-size:24px;font-weight:700;font-family:var(--mono);margin:16px 0;color:var(--accent2)"></div>
+    <div id="calc-prov" style="font-size:12px;color:var(--text2)"></div>
+  </div>
+
+  <div class="sh">Required Data Points (Priority Order)</div>
+  <table class="dt">
+    <thead><tr><th>Tier</th><th>#</th><th>Data Point</th><th>Best Source</th><th>Provenance Tag</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge blue" style="font-size:10px">MUST</span></td><td>1</td><td><strong>Allowed amount / negotiated rate</strong></td><td>BCBS MA MRF &rarr; Turquoise &rarr; Medicare &times; multiplier</td><td><span class="prov fact">FACT</span> from MRF</td></tr>
+      <tr><td><span class="badge blue" style="font-size:10px">MUST</span></td><td>2</td><td><strong>Deductible remaining</strong></td><td>Browser portal &rarr; self-report &rarr; show both scenarios</td><td><span class="prov fact">FACT</span> if portal / <span class="prov assum">ASSUMED</span> if not</td></tr>
+      <tr><td><span class="badge blue" style="font-size:10px">MUST</span></td><td>3</td><td><strong>Coinsurance rate or copay</strong></td><td>Patient SBC &rarr; self-report &rarr; assume 20%</td><td><span class="prov inf">INFERRED</span> from plan type</td></tr>
+      <tr><td><span class="badge blue" style="font-size:10px">MUST</span></td><td>4</td><td><strong>In-network status</strong></td><td>Browser directory &rarr; published directory &rarr; unverified</td><td><span class="prov fact">FACT</span> if verified</td></tr>
+      <tr><td><span class="badge blue" style="font-size:10px">MUST</span></td><td>5</td><td><strong>Cash price</strong> (self-pay path)</td><td>HPT file &rarr; Turquoise SSP &rarr; FAIR Health</td><td><span class="prov fact">FACT</span></td></tr>
+      <tr><td><span class="badge yellow" style="font-size:10px">SHOULD</span></td><td>6</td><td>OOP max remaining</td><td>Same as deductible</td><td></td></tr>
+      <tr><td><span class="badge yellow" style="font-size:10px">SHOULD</span></td><td>7</td><td>Place of service</td><td>NPPES taxonomy</td><td></td></tr>
+      <tr><td><span class="badge yellow" style="font-size:10px">SHOULD</span></td><td>8</td><td>Facility + professional split</td><td>Modifier 26/TC</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="sh">Path 2: Cash / Self-Pay</div>
+  <div class="formula">
+<span class="kw">Expected_bill</span> <span class="op">=</span> <span class="op">&Sigma;</span> (<span class="val">discounted_cash_price</span> per line item across all billing entities)
+                 <span class="op">+</span> <span class="val">potential_ancillary_services</span>
+
+<span class="kw">Actual_range</span> <span class="op">=</span> <span class="val">GFE_total</span> (if obtainable) <span class="op">or</span> <span class="val">HPT_cash</span> <span class="op">&times;</span> <span class="val">bundling_multiplier</span>
+  </div>
+
+  <div class="card">
+    <h3>Cash Price Reality</h3>
+    <p><code>discounted_cash_price</code> is just ONE line item. A real colonoscopy generates multiple bills:</p>
+    <table class="dt" style="margin-top:8px">
+      <thead><tr><th>Component</th><th>Source</th><th>Estimate</th><th>Provenance</th></tr></thead>
+      <tbody>
+        <tr><td>Facility fee (colonoscopy)</td><td>HPT file / Turquoise</td><td class="price">$1,500&ndash;$3,000</td><td><span class="prov fact">FACT</span></td></tr>
+        <tr><td>Physician / endoscopist fee</td><td>Separate NPI billing</td><td class="price">$300&ndash;$800</td><td><span class="prov inf">INFERRED</span></td></tr>
+        <tr><td>Anesthesia (if sedation)</td><td>Separate provider</td><td class="price">$400&ndash;$1,200</td><td><span class="prov inf">INFERRED</span></td></tr>
+        <tr><td>Pathology (if biopsy)</td><td>Separate lab</td><td class="price">$100&ndash;$400</td><td><span class="prov assum">ASSUMED</span></td></tr>
+        <tr style="font-weight:600"><td>Total estimated</td><td></td><td class="price">$2,300&ndash;$5,400</td><td></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:8px"><span class="prov fact">FACT</span> base price from HPT &bull; <span class="prov inf">INFERRED</span> ancillaries from typical patterns &bull; <span class="prov assum">ASSUMED</span> optional components</p>
+  </div>
+
+  <div class="sh">Legal Basis for Provenance Tags</div>
+  <div class="grid-2">
+    <div class="card">
+      <h3><span class="src law">LAW</span> Hospital Price Transparency (45 CFR 180)</h3>
+      <p>Effective Jan 2021, strengthened Jan 2026. Requires hospitals to publish 5 standard charge types in machine-readable format. Penalty: $300/day non-compliance. 91% post something; only 21% fully compliant.</p>
+    </div>
+    <div class="card">
+      <h3><span class="src law">LAW</span> Transparency in Coverage (45 CFR 147.211)</h3>
+      <p>Effective Jul 2022. Requires insurers to publish in-network negotiated rates in JSON (MRF). Monthly updates. 100+ TB across all payers. BCBS MA accessibility: 100% per Payerset audit.</p>
+    </div>
+  </div>
+
+  <div class="prompt-box">
+    <div class="pl">Prompt Output</div>
+    <button class="copy-btn" onclick="copyP('calc-prompt')">Copy</button>
+    <div class="pt" id="calc-prompt"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 4: SOURCES                               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content" id="tab-sources">
+  <div class="info">
+    <strong>7 data sources evaluated</strong> for the hackathon. Each source has different coverage, reliability, and legal authority. Sources 1-4 are validated and in use. Source 2 (BCBS MA MRF) is the priority gap to fill.
+  </div>
+
+  <div id="source-cards"></div>
+
+  <div class="sh">Sources NOT Viable</div>
+  <table class="dt">
+    <thead><tr><th>Source</th><th>Why Not</th></tr></thead>
+    <tbody>
+      <tr><td>MA APCD (All-Payer Claims Database)</td><td class="dim">8-10 week approval process</td></tr>
+      <tr><td>Serif Health API</td><td class="dim">Enterprise only, no free tier</td></tr>
+      <tr><td>CMS HCPCS Code Lookup API</td><td class="dim">API broken / returning empty</td></tr>
+      <tr><td>Harvard Pilgrim MRF</td><td class="dim">Decided to focus on BCBS MA only</td></tr>
+      <tr><td>CMS PPL API</td><td class="dim">Requires API key + AMA CPT license, unknown approval time</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 5: DATA MATRIX                           -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="content" id="tab-matrix">
+  <div class="info">
+    <strong>Data Availability Matrix</strong> &mdash; which sources cover which aspects for Boston GI. The provenance layer: before showing a price, we know WHERE it came from, HOW confident we are, and WHAT legal mandate requires its publication.
+  </div>
+
+  <div class="sh">Coverage by Data Aspect</div>
+  <table class="mx">
+    <thead><tr><th style="text-align:left">Data Aspect</th><th>NPPES</th><th>BCBS MRF</th><th>Turquoise</th><th>DoltHub</th><th>FAIR Health</th><th>Medicare FS</th></tr></thead>
+    <tbody>
+      <tr><td style="text-align:left">Provider identity</td><td class="y">121</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="p">1 hosp</td><td class="n">&mdash;</td><td class="p">via NPI</td></tr>
+      <tr><td style="text-align:left">Colonoscopy pricing</td><td class="n">&mdash;</td><td class="p">Gap!</td><td class="y">31 fac</td><td class="n">Timeout</td><td class="p">Bench</td><td class="y">Medicare</td></tr>
+      <tr><td style="text-align:left">Office visit pricing</td><td class="n">&mdash;</td><td class="p">Gap!</td><td class="n">No E&M</td><td class="y">12 payers</td><td class="y">80th pct</td><td class="y">Medicare</td></tr>
+      <tr><td style="text-align:left">Payer-specific rates</td><td class="n">&mdash;</td><td class="y">Source!</td><td class="p">Some</td><td class="y">53 payers</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+      <tr><td style="text-align:left">Cash / self-pay price</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="y">Rich</td><td class="y">Yes</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+      <tr><td style="text-align:left">Regional benchmarks</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="p">Mid</td><td class="n">&mdash;</td><td class="y">50/80pct</td><td class="y">RVU</td></tr>
+      <tr><td style="text-align:left">Facility vs pro split</td><td class="n">&mdash;</td><td class="y">Yes</td><td class="p">Bundled</td><td class="y">Yes</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+      <tr><td style="text-align:left">Quality / CMS rating</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="y">Stars</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="y">Stars</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sh">Recommended Source Priority by CPT</div>
+  <table class="dt">
+    <thead><tr><th>CPT</th><th>Description</th><th>Primary</th><th>Fallback 1</th><th>Fallback 2</th></tr></thead>
+    <tbody>
+      <tr><td><code>45378</code></td><td>Screening colonoscopy</td><td style="color:var(--accent2)">BCBS MRF</td><td>Turquoise ($580-$7,966)</td><td>Medicare FS &times; 1.96</td></tr>
+      <tr><td><code>45380</code></td><td>Colonoscopy w/ biopsy</td><td style="color:var(--accent2)">BCBS MRF</td><td>Turquoise</td><td>Medicare FS &times; 1.96</td></tr>
+      <tr><td><code>43239</code></td><td>Upper endoscopy w/ biopsy</td><td style="color:var(--accent2)">BCBS MRF</td><td>Turquoise</td><td>Medicare FS &times; 1.96</td></tr>
+      <tr><td><code>99203</code></td><td>New patient visit</td><td style="color:var(--accent2)">DoltHub (Carney)</td><td>FAIR Health</td><td>Medicare FS</td></tr>
+      <tr><td><code>99213</code></td><td>Follow-up visit</td><td style="color:var(--accent2)">DoltHub (Carney)</td><td>FAIR Health</td><td>Medicare FS</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sh">Key Gaps to Fill</div>
+  <div class="grid-2">
+    <div class="card" style="border-color:var(--accent4)">
+      <h3 style="color:var(--accent4)">GAP 1: BCBS MA Colonoscopy Pricing per Provider</h3>
+      <p>Download + parse BCBS MA MRF to get negotiated rates for CPTs 45378/45380 at each Boston hospital. This is the core data for cross-provider comparison. Multi-GB file.</p>
+    </div>
+    <div class="card" style="border-color:var(--accent3)">
+      <h3 style="color:var(--accent3)">GAP 2: FAIR Health for Boston ZIP</h3>
+      <p>Currently have New Haven (06510). Need Boston (02114) via Playwright. Expect 10-20% higher prices.</p>
+    </div>
+    <div class="card" style="border-color:var(--accent3)">
+      <h3 style="color:var(--accent3)">GAP 3: Medicare Fee Schedule for MA</h3>
+      <p>Download national CSV, filter for target CPTs + MA locality. Available at cms.gov.</p>
+    </div>
+    <div class="card" style="border-color:var(--text3)">
+      <h3>Fallback: Generate Mock Prices</h3>
+      <p>If MRF parsing takes too long, generate realistic per-provider prices using validated ranges from Turquoise + DoltHub + FAIR Health.</p>
+    </div>
+  </div>
+
+  <div class="prompt-box">
+    <div class="pl">Prompt Output</div>
+    <button class="copy-btn" onclick="copyP('mx-prompt')">Copy</button>
+    <div class="pt" id="mx-prompt">Data availability for Boston GI colonoscopy demo:
+
+VALIDATED: NPPES (121 GI providers, 0.9 confidence), Turquoise (31 facilities colonoscopy $580-$7,966, 0.8), DoltHub Carney Hospital (office visit rates 53 payers, 0.7 unreliable), FAIR Health (benchmarks for 06510, need 02114).
+
+PRIORITY GAPS:
+1. BCBS MA MRF — negotiated colonoscopy rates per Boston hospital (core demo data)
+2. FAIR Health Boston ZIP 02114 (Playwright needed)
+3. Medicare Fee Schedule MA locality (CSV download)
+
+FALLBACK: Generate realistic per-provider prices from validated ranges if MRF parsing exceeds hackathon timeline.</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const HOSPITALS = [
+  {name:"Massachusetts General Hospital",short:"MGH",addr:"55 Fruit St",zip:"02114",count:37,cls:"mgh"},
+  {name:"Brigham and Women's Hospital",short:"BWH",addr:"75 Francis St",zip:"02115",count:19,cls:"bwh"},
+  {name:"Beth Israel Deaconess",short:"BIDMC",addr:"330 Brookline Ave",zip:"02215",count:19,cls:"bidmc"},
+  {name:"Boston Medical Center",short:"BMC",addr:"725 Albany St",zip:"02118",count:11,cls:"bmc"},
+  {name:"BWH Faulkner",short:"Faulkner",addr:"110 Francis St",zip:"02215",count:9,cls:"bwh"},
+  {name:"Tufts Medical Center",short:"Tufts",addr:"800 Washington St",zip:"02111",count:8,cls:"tufts"},
+  {name:"Atrius Health",short:"Atrius",addr:"133 Brookline Ave",zip:"02215",count:6,cls:"other"},
+  {name:"VA Boston",short:"VA",addr:"150 S Huntington Ave",zip:"02130",count:2,cls:"other"},
+  {name:"Boston Specialists",short:"BSE",addr:"75 Kneeland St",zip:"02111",count:2,cls:"other"},
+  {name:"Other/Independent",short:"Other",addr:"Various",zip:"—",count:4,cls:"other"},
+];
+
+const PROVIDERS = [
+  {name:"Diane Abraczinskas",cred:"MD",hosp:"MGH",zip:"02114",phone:"617-724-6044",cls:"mgh"},
+  {name:"Hiroyuki Aihara",cred:"M.D.",hosp:"BWH",zip:"02115",phone:"617-732-5500",cls:"bwh"},
+  {name:"Jessica Allegretti",cred:"M.D.",hosp:"BWH",zip:"02115",phone:"617-732-6389",cls:"bwh"},
+  {name:"Braden Kuo",cred:"MD",hosp:"MGH",zip:"02114",phone:"617-726-0854",cls:"mgh"},
+  {name:"Peter Banks",cred:"MD",hosp:"BWH",zip:"02115",phone:"617-525-8266",cls:"bwh"},
+  {name:"Sunil Sheth",cred:"MD",hosp:"BIDMC",zip:"02215",phone:"617-667-5166",cls:"bidmc"},
+  {name:"Helen Shields",cred:"MD",hosp:"BIDMC",zip:"02215",phone:"617-667-2136",cls:"bidmc"},
+  {name:"Mandeep Sawhney",cred:"MD",hosp:"BIDMC",zip:"02215",phone:"617-667-2139",cls:"bidmc"},
+  {name:"Douglas Pleskow",cred:"MD",hosp:"BIDMC",zip:"02215",phone:"617-667-5166",cls:"bidmc"},
+  {name:"Walter Chan",cred:"MD",hosp:"MGH",zip:"02114",phone:"617-724-6044",cls:"mgh"},
+  {name:"Daniel Chung",cred:"MD",hosp:"MGH",zip:"02114",phone:"617-726-7542",cls:"mgh"},
+  {name:"Thomas Stumpf",cred:"MD",hosp:"BMC",zip:"02118",phone:"617-638-8330",cls:"bmc"},
+  {name:"Francis Farraye",cred:"MD",hosp:"BMC",zip:"02118",phone:"617-638-8330",cls:"bmc"},
+  {name:"Michael Krier",cred:"MD",hosp:"Tufts",zip:"02111",phone:"617-636-5883",cls:"tufts"},
+  {name:"Joel Goldberg",cred:"MD",hosp:"Tufts",zip:"02111",phone:"617-636-5883",cls:"tufts"},
+];
+
+const CPTS = [
+  {code:"45378",name:"Screening Colonoscopy",cat:"GI Screening",dur:30,story:"Recommended screening for adults 45+ to detect colorectal cancer early",shoppable:true,anesthesia:true},
+  {code:"45380",name:"Colonoscopy with Biopsy",cat:"GI Diagnostic",dur:45,story:"When polyps or abnormal tissue are found, a sample is taken",shoppable:true,anesthesia:true},
+  {code:"43239",name:"Upper Endoscopy w/ Biopsy",cat:"GI Diagnostic",dur:30,story:"Used to investigate persistent heartburn, difficulty swallowing",shoppable:true,anesthesia:true},
+  {code:"43235",name:"Upper Endoscopy",cat:"GI Diagnostic",dur:20,story:"Examine esophagus, stomach, and upper small intestine",shoppable:true,anesthesia:true},
+  {code:"99203",name:"New Patient GI Consultation",cat:"Office Visit",dur:30,story:"First visit with a gastroenterologist to discuss symptoms",shoppable:true,anesthesia:false},
+  {code:"99213",name:"Follow-up GI Visit",cat:"Office Visit",dur:20,story:"Follow-up visit to review results or ongoing treatment",shoppable:true,anesthesia:false},
+];
+
+const DOLT99213 = [
+  {payer:"Tufts HMO",amt:31},{payer:"Tufts PPO",amt:31},{payer:"Medicaid Healthy Start",amt:37.94},
+  {payer:"CeltiCare Choice",amt:52.78},{payer:"Fallon-Steward",amt:83.34},{payer:"Fallon Navicare",amt:89.41},
+  {payer:"Fallon",amt:102.27},{payer:"Humana",amt:122.58},{payer:"Medicaid",amt:144.21},
+  {payer:"Neighborhood Health",amt:144.21},{payer:"Elder Services",amt:251.83},{payer:"CeltiCare CHIP",amt:292.18},
+];
+
+const DOLT99203 = [
+  {payer:"Tufts Select",amt:20.15},{payer:"Network Health QHP",amt:34.11},{payer:"Aetna Medicare Adv",amt:46.26},
+  {payer:"Network Health Non-Sub",amt:47.70},{payer:"Medicaid Healthy Start",amt:53.62},{payer:"CeltiCare Choice",amt:74.59},
+  {payer:"MBHP Steward ACO",amt:85.58},{payer:"Fallon-Steward",amt:117.78},{payer:"Humana",amt:173.23},
+  {payer:"Medicaid Managed",amt:203.80},{payer:"BMC Hlthnet",amt:203.80},{payer:"Network Health Medicaid",amt:203.80},
+  {payer:"Health Safety Net",amt:681.02},
+];
+
+const FH = {
+  "99213":{desc:"Office visit (established)",in:167,out:259,fac_in:158,fac_out:212},
+  "99203":{desc:"New patient visit",in:248,out:398,fac_in:252,fac_out:360},
+  "99283":{desc:"ER visit (moderate)",in:1744,out:1843,phys_in:190,fac_in:1554},
+};
+
+const SOURCES = [
+  {id:1,name:"NPPES NPI Registry",type:"rest",status:"works",conf:0.9,legal:"42 CFR Part 2",data:["providers"],
+   url:"npiregistry.cms.hhs.gov/api/",auth:"None",fresh:"Monthly",
+   got:"121 GI providers in Boston proper with NPI, name, address, phone, taxonomy",
+   gaps:["No pricing","No insurance network","Hospital affiliation resolved by address matching"]},
+  {id:2,name:"BCBS MA Machine-Readable Files",type:"file",status:"gap",conf:0.95,legal:"45 CFR 147.211",data:["negotiated rates","all plans"],
+   url:"transparency-in-coverage.bluecrossma.com",auth:"None (JS rendering needed)",fresh:"Monthly",
+   got:"Portal accessible, 100% file accessibility per Payerset audit. Multi-GB JSON files with every negotiated rate × every provider × every plan.",
+   gaps:["Needs JS rendering to get file URLs","Multi-GB files need parsing","Not yet downloaded"]},
+  {id:3,name:"Turquoise Health",type:"browser",status:"works",conf:0.8,legal:"Derived from 45 CFR 180",data:["cash prices","SSP bundles"],
+   url:"turquoise.health/patients",auth:"None",fresh:"Unclear",
+   got:"Colonoscopy: 31 facilities, $580-$7,966 (13.7x spread). MRI: 38 facilities, $270-$7,045.",
+   gaps:["SSP bundles not raw CPT","No office visit (E&M) pricing","No government plan data"]},
+  {id:4,name:"DoltHub Transparency",type:"rest",status:"unreliable",conf:0.7,legal:"Derived from 45 CFR 180",data:["negotiated rates","cash","53 payers"],
+   url:"dolthub.com/api/v1alpha1/...",auth:"None",fresh:"2024-vintage, halted",
+   got:"Carney Hospital (220017): 99213 rates from 12 payers ($31-$292), 99203 from 13 payers ($20-$681).",
+   gaps:["30s API timeout","GI CPTs (45378/45380) all timed out","Only Carney Hospital in Boston","Collection halted"]},
+  {id:5,name:"FAIR Health Consumer",type:"browser",status:"partial",conf:0.75,legal:"Independent nonprofit",data:["benchmarks","percentiles"],
+   url:"fairhealthconsumer.org/medical",auth:"None (Playwright needed)",fresh:"Quarterly",
+   got:"80th percentile benchmarks for New Haven (06510). 99213: $167 IN / $259 OON. 99203: $248 / $398.",
+   gaps:["Currently New Haven data, need Boston (02114)","Boston typically 10-20% higher","Needs Playwright for new lookups"]},
+  {id:6,name:"CMS Medicare Fee Schedule",type:"file",status:"available",conf:0.9,legal:"Public law",data:["Medicare payment","RVU"],
+   url:"cms.gov/medicare/payment/fee-schedules/physician",auth:"None",fresh:"Annual",
+   got:"Downloadable CSV. Formula: Payment = (Work_RVU × GPCI + PE_RVU × GPCI + MP_RVU × GPCI) × CF ($32.35). Commercial ≈ 196% of Medicare (Milliman 2025).",
+   gaps:["Medicare rates only","Need to download + filter for MA locality","Not yet downloaded"]},
+  {id:7,name:"CMS PPL API",type:"rest",status:"not viable",conf:0,legal:"",data:[],
+   url:"medicare.gov/api/procedure-price-lookup",auth:"API key + AMA license",fresh:"",
+   got:"Requires API key + AMA CPT license. Unknown approval time. National averages only, no geographic filtering.",
+   gaps:["Skip for hackathon"]},
+];
+
+// ═══════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+}));
+
+// ═══════════════════════════════════════════
+// OVERVIEW: CPT cards + hospital bars
+// ═══════════════════════════════════════════
+function renderOverview() {
+  document.getElementById('cpt-cards').innerHTML = CPTS.map(c => `
+    <div class="card">
+      <h3><code style="color:var(--teal)">${c.code}</code> ${c.name}</h3>
+      <p>${c.story}</p>
+      <div style="margin-top:6px;font-size:12px;color:var(--text3)">
+        ${c.cat} &bull; ~${c.dur}min &bull; ${c.anesthesia ? 'Requires anesthesia' : 'No anesthesia'}
+        ${c.shoppable ? ' &bull; <span style="color:var(--accent2)">CMS Shoppable</span>' : ''}
+      </div>
+    </div>
+  `).join('');
+
+  const maxCount = Math.max(...HOSPITALS.map(h => h.count));
+  document.getElementById('hosp-bars').innerHTML = HOSPITALS.map(h => `
+    <div style="display:grid;grid-template-columns:220px 1fr 40px;gap:12px;align-items:center;margin:6px 0">
+      <div style="font-size:13px"><span class="hosp-badge ${h.cls}">${h.short}</span> ${h.name}</div>
+      <div class="bar" style="background:var(--surface3)"><div class="bar-fill" style="width:${(h.count/maxCount*100)}%;background:var(--accent);border-radius:4px"></div></div>
+      <div style="font-family:var(--mono);font-size:13px;text-align:right">${h.count}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════
+// PROVIDERS
+// ═══════════════════════════════════════════
+let hospFilterVal = 'all';
+function renderProviders() {
+  const filtered = hospFilterVal === 'all' ? PROVIDERS : PROVIDERS.filter(p => p.hosp === hospFilterVal);
+  document.getElementById('prov-tbody').innerHTML = filtered.map(p => `
+    <tr><td><strong>${p.name}</strong></td><td class="dim">${p.cred}</td>
+    <td><span class="hosp-badge ${p.cls}">${p.hosp}</span></td>
+    <td class="dim">${p.zip}</td><td style="font-family:var(--mono);font-size:12px">${p.phone}</td></tr>
+  `).join('');
+
+  const hospNames = ['all',...[...new Set(PROVIDERS.map(p=>p.hosp))]];
+  document.getElementById('hosp-filter').innerHTML = hospNames.map(h =>
+    `<div class="chip ${h===hospFilterVal?'on':''}" onclick="hospFilterVal='${h}';renderProviders()">${h==='all'?'All Hospitals':h} ${h!=='all'?'('+PROVIDERS.filter(p=>p.hosp===h).length+')':''}</div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════
+// PRICING
+// ═══════════════════════════════════════════
+function renderPricing() {
+  document.getElementById('dolt-99213').innerHTML = DOLT99213.map(r =>
+    `<tr><td>${r.payer}</td><td class="price">$${r.amt.toFixed(2)}</td></tr>`
+  ).join('');
+  document.getElementById('dolt-99203').innerHTML = DOLT99203.map(r =>
+    `<tr><td>${r.payer}</td><td class="price">$${r.amt.toFixed(2)}</td></tr>`
+  ).join('');
+
+  document.getElementById('fh-cards').innerHTML = Object.entries(FH).map(([cpt,d]) => `
+    <div class="card">
+      <h3>CPT ${cpt}</h3><p>${d.desc}</p>
+      <table class="dt"><thead><tr><th></th><th>In-Net</th><th>Out-Net</th></tr></thead><tbody>
+        ${d.phys_in ? `<tr><td>Physician</td><td class="price">$${d.phys_in}</td><td></td></tr>` : ''}
+        ${d.fac_in ? `<tr><td>Facility</td><td class="price">$${d.fac_in}</td><td class="price">$${d.fac_out||''}</td></tr>` : ''}
+        <tr style="font-weight:600"><td>Total</td><td class="price">$${d.in}</td><td class="price">$${d.out}</td></tr>
+      </tbody></table>
+      <div style="margin-top:6px"><span class="prov fact">FACT</span> <span style="font-size:11px;color:var(--text3)">80th pctile, ZIP 06510 (need 02114)</span></div>
+    </div>
+  `).join('');
+
+  document.getElementById('price-prompt').textContent = `Boston GI pricing data (validated 2026-03-28):
+
+TURQUOISE (0.8 confidence): Colonoscopy SSP GA002 cash prices: $580–$7,966 across 31 facilities within 50mi of Boston. 13.7x variance. Bundled pricing (facility + professional). No office visit data.
+
+DOLTHUB (0.7, unreliable, cached): Carney Hospital (220017) — only Boston hospital with data.
+- CPT 99213 (office visit): $31–$292 across 12 payers. Gross: $144.21. Cash: $11.54.
+- CPT 99203 (new patient): $20–$681 across 13 payers. Gross: $203.80.
+- CPT 45378/45380 (colonoscopy): TIMED OUT — no data retrieved.
+- 53 unique payers including Tufts, Aetna, CIGNA, BCBS, Harvard Pilgrim, Humana, Fallon.
+
+FAIR HEALTH (0.75, New Haven — Boston +10-20%): 80th percentile benchmarks.
+- 99213: $167 in-network / $259 out-of-network (office-based)
+- 99203: $248 / $398
+- 99283 (ER): $1,744 total ($190 physician + $1,554 facility)
+
+PRIORITY GAP: BCBS MA MRF (multi-GB JSON) — negotiated colonoscopy rates per Boston hospital per plan. This is the core demo data.`;
+}
+
+function filterPrice(src) {
+  document.querySelectorAll('#tab-pricing .chips .chip').forEach(c => c.classList.toggle('on', c.textContent.toLowerCase().includes(src) || src==='all'));
+  document.querySelectorAll('.price-sec').forEach(s => s.style.display = (src==='all'||s.dataset.src===src)?'block':'none');
+}
+
+// ═══════════════════════════════════════════
+// CALCULATION
+// ═══════════════════════════════════════════
+function recalc() {
+  const allowed = +document.getElementById('calc-allowed').value;
+  const deduct = +document.getElementById('calc-deduct').value;
+  const coins = +document.getElementById('calc-coins').value / 100;
+  const oopMax = +document.getElementById('calc-oop').value;
+
+  const afterDeduct = Math.max(allowed - deduct, 0);
+  const coinsAmt = afterDeduct * coins;
+  const rawOOP = Math.min(deduct, allowed) + coinsAmt;
+  const finalOOP = Math.min(rawOOP, oopMax);
+  const capped = rawOOP > oopMax;
+
+  document.getElementById('calc-steps').innerHTML = `
+    <div class="calc-step"><div class="calc-num">1</div><div class="calc-body">Allowed amount: <span class="hl">$${allowed.toLocaleString()}</span> <span class="prov fact">FACT</span> from MRF or <span class="prov inf">INFERRED</span> from benchmark</div></div>
+    <div class="calc-step"><div class="calc-num">2</div><div class="calc-body">Apply deductible: patient pays first <span class="hl">$${Math.min(deduct,allowed).toLocaleString()}</span> <span class="prov ${deduct>0?'fact':'assum'}">from portal</span></div></div>
+    <div class="calc-step"><div class="calc-num">3</div><div class="calc-body">Remaining after deductible: $${afterDeduct.toLocaleString()} &times; ${(coins*100)}% coinsurance = <span class="hl">$${coinsAmt.toLocaleString(undefined,{maximumFractionDigits:2})}</span></div></div>
+    <div class="calc-step"><div class="calc-num">4</div><div class="calc-body">Raw OOP: $${Math.min(deduct,allowed).toLocaleString()} + $${coinsAmt.toLocaleString(undefined,{maximumFractionDigits:2})} = $${rawOOP.toLocaleString(undefined,{maximumFractionDigits:2})} ${capped ? `<span style="color:var(--accent3)">&rarr; capped at OOP max $${oopMax.toLocaleString()}</span>` : ''}</div></div>
+  `;
+  document.getElementById('calc-result').textContent = `Estimated OOP: $${finalOOP.toLocaleString(undefined,{maximumFractionDigits:2})}`;
+  document.getElementById('calc-prov').innerHTML = `<span class="prov ${deduct>0?'fact':'assum'}">${deduct>0?'FACT':'ASSUMED'}</span> Deductible from ${deduct>0?'portal retrieval':'default assumption'} &bull; <span class="prov ${coins===0.2?'inf':'fact'}">${coins===0.2?'INFERRED':'FACT'}</span> Coinsurance ${coins===0.2?'(typical 20%)':'from plan docs'}`;
+
+  document.getElementById('calc-prompt').textContent = `OOP Calculation for insured patient (BCBS MA):
+
+Formula: OOP = min(deductible_remaining + (allowed_amount - deductible_remaining) × coinsurance, oop_max_remaining)
+
+With inputs:
+- Allowed amount: $${allowed} (source: ${allowed>=1000?'Turquoise SSP bundle or BCBS MRF':'FAIR Health benchmark or DoltHub'})
+- Deductible remaining: $${deduct} (source: browser portal retrieval or patient self-report)
+- Coinsurance: ${(coins*100)}% (source: plan SBC or patient self-report)
+- OOP max remaining: $${oopMax}
+
+Result: $${finalOOP.toFixed(2)}${capped ? ' (capped at OOP max)' : ''}
+
+Provenance: Allowed amount is ${allowed>=1000?'FACT (from mandated price transparency filing)':'INFERRED (benchmark, actual may vary)'}. Deductible is ${deduct>0?'FACT if from portal, ASSUMED if default':'ASSUMED ($0 remaining)'}. Coinsurance is ${coins===0.2?'INFERRED (typical 20% for PPO)':'from plan documentation'}.
+
+Cash alternative: Turquoise shows colonoscopy cash prices $580–$7,966 (13.7x variance). At cheapest facility, cash may be less than insured OOP if deductible not met.`;
+}
+
+// ═══════════════════════════════════════════
+// SOURCES TAB
+// ═══════════════════════════════════════════
+function renderSources() {
+  const statusColor = {works:'var(--accent2)',gap:'var(--accent4)',unreliable:'var(--accent3)',partial:'var(--accent3)',available:'var(--accent)','not viable':'var(--text3)'};
+  const typeClass = {rest:'rest',browser:'browser',file:'file'};
+
+  document.getElementById('source-cards').innerHTML = SOURCES.filter(s=>s.status!=='not viable').map(s => `
+    <div class="card" ${s.status==='gap'?'style="border-color:var(--accent4)"':''}>
+      <h3>
+        <span class="src ${typeClass[s.type]||'rest'}">${s.type.toUpperCase()}</span>
+        Source ${s.id}: ${s.name}
+        <span style="color:${statusColor[s.status]};font-size:12px;font-weight:400">&bull; ${s.status.toUpperCase()}</span>
+      </h3>
+      ${s.conf>0?`<div class="conf-bar"><div class="conf-track"><div class="conf-fill ${s.conf>=0.85?'h':s.conf>=0.7?'m':'l'}" style="width:${s.conf*100}%"></div></div><span style="font-size:12px">${s.conf}</span></div>`:''}
+      ${s.legal?`<div style="font-size:11px;margin:4px 0"><span class="src law">LAW</span> ${s.legal}</div>`:''}
+      <p style="margin:8px 0"><strong>URL:</strong> <code style="color:var(--teal);font-size:12px">${s.url}</code> &bull; Auth: ${s.auth} &bull; Freshness: ${s.fresh}</p>
+      <p><strong>What we have:</strong> ${s.got}</p>
+      ${s.gaps.length?`<div style="margin-top:8px">${s.gaps.map(g=>`<span class="gap">${g}</span>`).join(' ')}</div>`:''}
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════
+// COPY
+// ═══════════════════════════════════════════
+function copyP(id) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent);
+  const btn = document.getElementById(id).parentElement.querySelector('.copy-btn');
+  btn.textContent='Copied!'; btn.classList.add('ok');
+  setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},1500);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+renderOverview();
+renderProviders();
+renderPricing();
+recalc();
+renderSources();
+</script>
+</body>
+</html>
